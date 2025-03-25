@@ -11,6 +11,31 @@ A streamlined interface for OpenAI's batch processing API. This tool allows you 
 - Track costs and performance metrics
 - Beautiful Streamlit UI for easy interaction
 
+## Cost Savings with Batch API
+
+BatchGPT leverages OpenAI's Batch API to significantly reduce costs for large-scale processing. See the pricing comparison below:
+
+### Regular API Pricing
+| Model | Input (per 1M tokens) | Output (per 1M tokens) |
+|-------|------------------------|------------------------|
+| o1-pro | $150.00 | $600.00 |
+| o1 | $15.00 | $60.00 |
+| o3-mini | $1.10 | $4.40 |
+
+### Batch API Pricing (50% Discount)
+| Model | Input (per 1M tokens) | Output (per 1M tokens) |
+|-------|------------------------|------------------------|
+| o1-pro | $75.00 | $300.00 |
+| o1 | $7.50 | $30.00 |
+| o3-mini | $0.55 | $2.20 |
+
+Using the Batch API can save you 50% on token costs for non-time-sensitive tasks, making it ideal for:
+- Large-scale data processing
+- Document analysis
+- Content generation
+- Research data analysis
+- Training data preparation
+
 ## Setup
 
 1. Clone this repository
