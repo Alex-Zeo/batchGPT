@@ -1,7 +1,7 @@
-# Environment variables and API keys
+# Environment variables
 .env
 
-# Python cache files
+# Python artifacts
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,19 +23,18 @@ wheels/
 .installed.cfg
 *.egg
 
-# Log files
+# Project-specific directories
 logs/
-*.log
-
-# Batch data and output files
-batches/
 batch_data/
+batches/
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# Virtual Environment
+venv/
+env/
+ENV/
 
-# Operating system files
-.DS_Store
-Thumbs.db
+# IDE files
+.idea/
 .vscode/
-.idea/ 
+*.swp
+*.swo
