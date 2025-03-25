@@ -1,0 +1,448 @@
+/* Modern enterprise styling for BatchGPT */
+
+/* Base styling */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 600 !important;
+}
+
+/* Main container padding */
+.main .block-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Discord-style cards */
+.discord-card {
+    background-color: #1E1F22;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid #2C2F33;
+    transition: all 0.2s ease;
+}
+
+.discord-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-color: #5865F2;
+}
+
+.discord-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #393c43;
+    padding-bottom: 8px;
+}
+
+.discord-card-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #FFFFFF;
+}
+
+.discord-card-content {
+    color: #DCDDDE;
+}
+
+/* Button styling */
+.stButton>button {
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.stButton>button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Metric styling */
+.stMetric {
+    background-color: #2C2F33;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #393c43;
+}
+
+.stMetric .metric-value {
+    font-weight: 700 !important;
+}
+
+/* Dataframe styling */
+.dataframe-container {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #2C2F33;
+}
+
+/* Tab styling */
+div[data-testid="stTabs"] {
+    background-color: #1E1F22;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+button[data-baseweb="tab"] {
+    font-weight: 500;
+}
+
+/* Sidebar styling */
+.sidebar .sidebar-content {
+    background-color: #2C2F33;
+}
+
+/* Toggle button styling */
+.stCheckbox > div {
+    font-weight: 500;
+}
+
+/* Code block styling */
+pre {
+    border-radius: 8px;
+    border: 1px solid #393c43;
+}
+
+code {
+    font-family: "Jetbrains Mono", monospace;
+}
+
+/* Status colors */
+.status-completed {
+    color: #43B581 !important;
+}
+
+.status-in-progress {
+    color: #FAA61A !important;
+}
+
+.status-failed {
+    color: #F04747 !important;
+}
+
+.status-unknown {
+    color: #DCDDDE !important;
+}
+
+/* Input field styling */
+div[data-baseweb="input"] {
+    border-radius: 6px;
+}
+
+div[data-baseweb="textarea"] {
+    border-radius: 6px;
+}
+
+/* Tooltip styling */
+div[data-baseweb="tooltip"] {
+    background-color: #2C2F33;
+    border-radius: 4px;
+    border: 1px solid #393c43;
+    color: #DCDDDE;
+}
+
+/* Progress bar styling */
+div[role="progressbar"] > div {
+    background-image: linear-gradient(90deg, #5865F2, #7289DA);
+}
+
+/* File uploader styling */
+.uploadedFile {
+    border-radius: 8px !important;
+    border: 1px dashed #393c43 !important;
+}
+
+/* Number input styling */
+div[data-baseweb="input-container"] {
+    border-radius: 6px;
+}
+
+/* Select box styling */
+div[data-baseweb="select"] {
+    border-radius: 6px;
+}
+
+/* Cards for file processing */
+.file-card {
+    background-color: #2C2F33;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #393c43;
+}
+
+.file-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.file-title {
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.file-meta {
+    color: #DCDDDE;
+    font-size: 0.9rem;
+}
+
+/* Custom info box */
+.info-box {
+    background-color: #5865F2;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.warning-box {
+    background-color: #FAA61A;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.error-box {
+    background-color: #F04747;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.success-box {
+    background-color: #43B581;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+/* Text styles */
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+h1 {
+    font-size: 28px !important;
+}
+
+/* Sidebar */
+.css-1d391kg, .css-1v3fvcr {
+    background-color: #2F3136 !important;
+}
+
+/* Input fields */
+.stTextInput > div > div > input {
+    background-color: #40444B !important;
+    color: #DCDDDE !important;
+    border-radius: 4px !important;
+    border: none !important;
+}
+
+.stTextArea > div > div > textarea {
+    background-color: #40444B !important;
+    color: #DCDDDE !important;
+    border-radius: 4px !important;
+    border: none !important;
+}
+
+/* Buttons */
+.stButton > button:focus {
+    box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.5) !important;
+}
+
+/* Status indicators */
+.stAlert > div {
+    border-radius: 4px !important;
+    border: none !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 2px;
+    background-color: #2F3136 !important;
+    border-radius: 4px !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: #36393F !important;
+    color: #B9BBBE !important;
+    border-radius: 4px !important;
+    border: none !important;
+    padding: 10px 16px !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #5865F2 !important;
+    color: white !important;
+}
+
+/* Expanders */
+.streamlit-expanderHeader {
+    background-color: #2F3136 !important;
+    color: #DCDDDE !important;
+    border-radius: 4px !important;
+    border: none !important;
+}
+
+.streamlit-expanderContent {
+    background-color: #36393F !important;
+    color: #DCDDDE !important;
+    border-radius: 0 0 4px 4px !important;
+    border: none !important;
+}
+
+/* Code blocks */
+pre {
+    background-color: #2F3136 !important;
+    color: #DCDDDE !important;
+    border-radius: 4px !important;
+    padding: 1rem !important;
+}
+
+code {
+    color: #DCDDDE !important;
+}
+
+/* DataFrames/Tables */
+.stDataFrame, .dataframe {
+    background-color: #2F3136 !important;
+    color: #DCDDDE !important;
+    border-radius: 4px !important;
+}
+
+.stDataFrame th {
+    background-color: #36393F !important;
+    color: #DCDDDE !important;
+    border: none !important;
+}
+
+.stDataFrame td {
+    background-color: #2F3136 !important;
+    color: #DCDDDE !important;
+    border: none !important;
+}
+
+/* File browser styles */
+.file-list {
+    background-color: #2F3136;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    background-color: #36393F;
+    cursor: pointer;
+}
+
+.file-item:hover {
+    background-color: #40444B;
+}
+
+.file-item-selected {
+    background-color: #4752C4;
+}
+
+.file-icon {
+    margin-right: 12px;
+}
+
+.file-name {
+    color: #DCDDDE;
+    flex-grow: 1;
+}
+
+.file-type {
+    color: #B9BBBE;
+    font-size: 12px;
+}
+
+/* Progress bar */
+.stProgress > div > div > div > div {
+    background-color: #5865F2 !important;
+}
+
+/* Footer */
+footer {
+    display: none !important;
+}
+
+/* Charts */
+[data-testid="stMarkdownContainer"] + div svg g[clip-path] rect {
+    fill: #36393F !important;
+}
+
+/* Checkbox */
+.stCheckbox > div > div > div {
+    background-color: #36393F !important;
+    border-radius: 4px !important;
+}
+
+/* Text input container */
+div[data-baseweb="base-input"] {
+    background-color: #40444B !important;
+    border-radius: 4px !important;
+    border: none !important;
+}
+
+/* Remove the Streamlit branding */
+#MainMenu {
+    visibility: hidden;
+}
+
+/* Slider */
+.stSlider > div > div > div {
+    background-color: #40444B !important;
+}
+
+.stSlider > div > div > div > div {
+    background-color: #5865F2 !important;
+}
+
+/* Mark down container */
+.stMarkdown {
+    color: #DCDDDE !important;
+}
+
+/* Streamlit JSON container */
+.stJson {
+    background-color: #2F3136 !important;
+    border-radius: 4px !important; 
+    color: #DCDDDE !important;
+    border: 1px solid #40444B !important;
+    padding: 12px !important;
+}
+
+/* Enable custom scrollbar for Discord-like experience */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2F3136;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #202225;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #292B2F;
+} 

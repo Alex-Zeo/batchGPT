@@ -1,0 +1,12 @@
+[theme]
+primaryColor = "#5865F2"  # Discord blue
+backgroundColor = "#36393F"  # Discord dark gray
+secondaryBackgroundColor = "#2F3136"  # Discord channel list background
+textColor = "#DCDDDE"  # Discord text color
+font = "sans serif"
+
+[server]
+enableStaticServing = true
+
+[browser]
+gatherUsageStats = false 
