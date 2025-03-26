@@ -2,14 +2,47 @@
 
 A streamlined interface for OpenAI's batch processing API. This tool allows you to submit, monitor, and manage large batches of requests to OpenAI's models.
 
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐         ║
+║ │ ▓▓▓▓▓▓▓ │   │ ▓▓▓▓▓▓▓ │   │ ▓▓▓▓▓▓▓ │   │ ▓▓▓▓▓▓▓ │   │ ▓▓▓▓▓▓▓ │    ▲    ║
+║ │ ▓     ▓ │   │ ▓     ▓ │   │ ▓     ▓ │   │ ▓     ▓ │   │ ▓     ▓ │    │    ║
+║ │ ▓ ▓▓▓ ▓ │   │ ▓ ▓▓▓ ▓ │   │ ▓ ▓▓▓ ▓ │   │ ▓ ▓▓▓ ▓ │   │ ▓ ▓▓▓ ▓ │    │    ║
+║ │ ▓     ▓ │   │ ▓     ▓ │   │ ▓     ▓ │   │ ▓     ▓ │   │ ▓     ▓ │   Batch  ║
+║ │ ▓▓▓▓▓▓▓ │   │ ▓▓▓▓▓▓▓ │   │ ▓▓▓▓▓▓▓ │   │ ▓▓▓▓▓▓▓ │   │ ▓▓▓▓▓▓▓ │    │    ║
+║ └─────────┘   └─────────┘   └─────────┘   └─────────┘   └─────────┘    │    ║
+║      │             │             │             │             │          ▼    ║
+║      └─────────────┴─────────────┴─────────────┴─────────────┘              ║
+║                                    │                                         ║
+║                                    ▼                                         ║
+║                            ┌───────────────┐                                 ║
+║                            │ ╔═══════════╗ │                                 ║
+║                            │ ║  OpenAI   ║ │                                 ║
+║                            │ ║  Batch    ║ │                                 ║
+║                            │ ║  API      ║ │                                 ║
+║                            │ ╚═══════════╝ │                                 ║
+║                            └───────────────┘                                 ║
+║                                    │                                         ║
+║                                    ▼                                         ║
+║                          ┌─────────────────────┐                             ║
+║                          │   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   │                             ║
+║                          │   ▓ Results     ▓   │                             ║
+║                          │   ▓ • Processed ▓   │                             ║
+║                          │   ▓ • Analyzed  ▓   │                             ║
+║                          │   ▓ • Optimized ▓   │                             ║
+║                          │   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   │                             ║
+║                          └─────────────────────┘                             ║
+╚══════════════════════ B A T C H   G P T   A P I ═════════════════════════════╝
+```
+
 ## Features
 
-- Submit batch requests to OpenAI's API with customizable parameters
-- Monitor batch status and retrieve results
-- Process files (PDF, DOCX, TXT) for batch input
-- Auto-detect and manage batch jobs
-- Track costs and performance metrics
-- Beautiful Streamlit UI for easy interaction
+- **Submit batch requests** to OpenAI's API with customizable parameters
+- **Monitor batch status** and retrieve results in real-time
+- **Process files** (PDF, DOCX, TXT) for batch input
+- **Auto-detect and manage** batch jobs
+- **Track costs and performance** metrics
+- **Beautiful Streamlit UI** for easy interaction
 
 ## Cost Savings with Batch API
 
@@ -29,7 +62,7 @@ BatchGPT leverages OpenAI's Batch API to significantly reduce costs for large-sc
 | o1 | $7.50 | $30.00 |
 | o3-mini | $0.55 | $2.20 |
 
-Using the Batch API can save you 50% on token costs for non-time-sensitive tasks, making it ideal for:
+Using the Batch API can save you **50% on token costs** for non-time-sensitive tasks, making it ideal for:
 - Large-scale data processing
 - Document analysis
 - Content generation
@@ -40,7 +73,7 @@ Using the Batch API can save you 50% on token costs for non-time-sensitive tasks
 
 1. Clone this repository
 2. Install dependencies:
-   ```
+   ```bash
    pip install -r requirements.txt
    ```
 3. Create a `.env` file with your OpenAI API key:
@@ -48,7 +81,7 @@ Using the Batch API can save you 50% on token costs for non-time-sensitive tasks
    OPENAI_API_KEY=your_api_key_here
    ```
 4. Run the application:
-   ```
+   ```bash
    streamlit run app.py
    ```
 
@@ -68,4 +101,4 @@ Using the Batch API can save you 50% on token costs for non-time-sensitive tasks
 
 ## License
 
-MIT 
+MIT License 
