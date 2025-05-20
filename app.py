@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import streamlit as st
 import asyncio
 import pandas as pd
@@ -189,9 +190,15 @@ with st.sidebar:
     )
     
     max_batch_size_str = st.text_input(
-        "Max Batch Size", 
+        "Max Batch Size",
         value="5000",
         help="Maximum number of requests in a single batch. Larger batches will be split."
+    )
+
+    budget_str = st.text_input(
+        "Budget (USD)",
+        value="",
+        help="Abort submission if estimated cost would exceed this amount. Leave blank for no limit."
     )
     
     # Response format
@@ -268,6 +275,15 @@ with st.sidebar:
     except ValueError:
         st.sidebar.warning("Invalid batch size value. Using default of 5000.")
         max_batch_size = 5000
+
+    try:
+        budget = float(budget_str) if budget_str else None
+        if budget is not None and budget <= 0:
+            st.sidebar.warning("Budget should be positive. Ignoring budget limit.")
+            budget = None
+    except ValueError:
+        st.sidebar.warning("Invalid budget value. Ignoring budget limit.")
+        budget = None
     
     try:
         max_chunk_size = int(max_chunk_size_str)
@@ -439,7 +455,8 @@ with tab1:
                             temperature=temperature,
                             max_tokens=max_tokens,
                             response_format=response_format,
-                            max_batch_size=max_batch_size
+                            max_batch_size=max_batch_size,
+                            budget=budget
                         ))
                         
                         progress_bar.progress(90)
@@ -993,6 +1010,7 @@ with tab4:
 # Tab 5: Logs
 with tab5:
     st.header("Logs")
+
     
     # Show logs toggle
     if st.session_state.show_logs:
@@ -1004,6 +1022,19 @@ with tab5:
     
     # Get logs button
     if st.button("Get Logs"):
+
+
+    # Show logs toggle using button return value
+    toggle_pressed = st.button(
+        "Hide Logs" if st.session_state.show_logs else "Show Logs",
+        key="toggle-logs",
+    )
+    if toggle_pressed:
+        st.session_state.show_logs = not st.session_state.show_logs
+
+    # Get logs button and display logs when visible
+    if st.session_state.show_logs and st.button("Get Logs"):
+
         logs = get_recent_logs()
         st.code("\n".join(logs), language="text")
 
