@@ -1,38 +1,42 @@
 import asyncio
-from pathlib import Path
-from typing import List
+from typing import List, Dict
 
-from pdf_loader import load_pdf_text
+from openai_client import AsyncOpenAIClient
 from tokenizer import Tokenizer
-from prompt_store import load_prompts
-from openai_client import OpenAIClient
-from postprocessor import ChunkResult
+from pdf_loader import chunk_pdf
+from prompt_store import PromptStore
+from postprocessor import merge_chunks
 
 
 class Orchestrator:
-    def __init__(self, model: str = "gpt-4o", parallelism: int = 5):
-        self.model = model
-        self.parallelism = parallelism
-        self.prompts = load_prompts()
-        self.tokenizer = Tokenizer(model)
-        self.client = OpenAIClient(model)
+    """Coordinate PDF loading, chunking and OpenAI requests."""
 
-    async def _process_chunk(self, chunk: str, index: int) -> ChunkResult:
-        messages = [
-            {"role": "system", "content": self.prompts.system},
-            {"role": "user", "content": f"{self.prompts.user}\n\n{chunk}"},
-        ]
-        content = await self.client.chat(messages)
-        return ChunkResult(chunk_index=index, content=content)
+    def __init__(
+        self,
+        client: AsyncOpenAIClient,
+        tokenizer: Tokenizer,
+        store: PromptStore,
+    ) -> None:
+        self.client = client
+        self.tokenizer = tokenizer
+        self.store = store
 
-    async def run(self, pdf: Path) -> List[ChunkResult]:
-        text, _ = load_pdf_text(pdf)
-        chunks = self.tokenizer.chunk(text)
-        sem = asyncio.Semaphore(self.parallelism)
+    async def process_pdf(self, path: str, **kwargs) -> str:
+        _text, chunks, digest = chunk_pdf(path, self.tokenizer, **kwargs)
+        responses: List[Dict] = []
+        for chunk in chunks:
+            resp = await self.client.chat_complete([
+                {"role": "user", "content": chunk}
+            ], max_tokens=kwargs.get("max_tokens", 500))
+            responses.append(resp)
+            self.store.save(chunk, resp)
+        return merge_chunks(responses)
 
-        async def sem_task(ch, i):
-            async with sem:
-                return await self._process_chunk(ch, i)
 
-        tasks = [asyncio.create_task(sem_task(ch, i)) for i, ch in enumerate(chunks)]
-        return await asyncio.gather(*tasks)
+async def run_pdf(path: str, model: str = "gpt-3.5-turbo", budget: float = None, output: str = None) -> str:
+    tokenizer = Tokenizer(model)
+    client = AsyncOpenAIClient(model=model, budget=budget)
+    store = PromptStore(output or "store.jsonl")
+    orchestrator = Orchestrator(client, tokenizer, store)
+    result = await orchestrator.process_pdf(path)
+    return result

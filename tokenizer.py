@@ -1,26 +1,38 @@
 from typing import List
-import tiktoken
+
+try:
+    import tiktoken
+except Exception:  # pragma: no cover - optional dependency
+    tiktoken = None
 
 
 class Tokenizer:
-    def __init__(self, model: str = "gpt-4o"):
-        try:
-            self.encoding = tiktoken.encoding_for_model(model)
-        except Exception:
-            self.encoding = tiktoken.get_encoding("cl100k_base")
+    """Simple token counter wrapper."""
 
-    def chunk(self, text: str, max_tokens: int = 6000, overlap: int = 200) -> List[str]:
-        tokens = self.encoding.encode(text)
-        chunks = []
-        start = 0
-        while start < len(tokens):
-            end = min(start + max_tokens, len(tokens))
-            chunk = self.encoding.decode(tokens[start:end])
-            chunks.append(chunk)
-            if end == len(tokens):
-                break
-            start = end - overlap
-        return chunks
+    def __init__(self, model: str = "gpt-3.5-turbo") -> None:
+        self.model = model
+        if tiktoken:
+            try:
+                self.enc = tiktoken.encoding_for_model(model)
+            except Exception:
+                self.enc = tiktoken.get_encoding("cl100k_base")
+        else:
+            self.enc = None
 
     def count(self, text: str) -> int:
-        return len(self.encoding.encode(text))
+        if self.enc:
+            return len(self.enc.encode(text))
+        return len(text.split())
+
+    def chunk(self, text: str, max_tokens: int, overlap: int = 0) -> List[str]:
+        if self.count(text) <= max_tokens:
+            return [text]
+        words = text.split()
+        chunks: List[str] = []
+        start = 0
+        while start < len(words):
+            end = start + max_tokens
+            chunk = " ".join(words[start:end])
+            chunks.append(chunk)
+            start = end - overlap if overlap else end
+        return chunks

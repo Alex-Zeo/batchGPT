@@ -1,22 +1,105 @@
+import os
 import asyncio
-from typing import List, Dict
-from openai import AsyncOpenAI
+import time
+from typing import Any, Dict, List, Optional
+
+import openai
+from aiohttp import ClientError
 
 
-class OpenAIClient:
-    def __init__(self, model: str = "gpt-4o"):
+class AsyncOpenAIClient:
+    """Asynchronous OpenAI client with basic retry, budget and throttling."""
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: str = "gpt-3.5-turbo",
+        max_tokens_per_minute: int = 60000,
+        request_limit_per_minute: int = 3000,
+        budget: Optional[float] = None,
+        retry_limit: int = 3,
+    ) -> None:
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.client = openai.AsyncOpenAI(api_key=self.api_key)
         self.model = model
-        self.client = AsyncOpenAI()
+        self.max_tokens_per_minute = max_tokens_per_minute
+        self.request_limit_per_minute = request_limit_per_minute
+        self.budget = budget
+        self.retry_limit = retry_limit
+        self._lock = asyncio.Lock()
+        self._reset_throttle()
+        self.cost_spent = 0.0
 
-    async def chat(self, messages: List[Dict[str, str]], *, max_retries: int = 5) -> str:
-        delay = 1
-        for attempt in range(max_retries):
+    # simple pricing table per million tokens
+    PRICING = {
+        "gpt-4": {"input": 30 / 1_000_000, "output": 60 / 1_000_000},
+        "gpt-4-turbo": {"input": 10 / 1_000_000, "output": 30 / 1_000_000},
+        "gpt-3.5-turbo": {"input": 0.5 / 1_000_000, "output": 1.5 / 1_000_000},
+    }
+
+    def _reset_throttle(self) -> None:
+        self._window_start = time.time()
+        self._tokens_used = 0
+        self._requests_used = 0
+
+    async def _throttle(self, token_count: int) -> None:
+        async with self._lock:
+            now = time.time()
+            if now - self._window_start >= 60:
+                self._reset_throttle()
+            # wait if tokens or requests exceed limits
+            while (
+                self._tokens_used + token_count > self.max_tokens_per_minute
+                or self._requests_used + 1 > self.request_limit_per_minute
+            ):
+                wait = 60 - (now - self._window_start)
+                await asyncio.sleep(max(wait, 0))
+                now = time.time()
+                if now - self._window_start >= 60:
+                    self._reset_throttle()
+            self._tokens_used += token_count
+            self._requests_used += 1
+
+    def _update_cost(self, usage: Dict[str, int]) -> None:
+        model_price = None
+        for key in self.PRICING:
+            if key in self.model:
+                model_price = self.PRICING[key]
+                break
+        if not model_price:
+            return
+        input_tokens = usage.get("prompt_tokens", 0)
+        output_tokens = usage.get("completion_tokens", 0)
+        self.cost_spent += (
+            input_tokens * model_price["input"] + output_tokens * model_price["output"]
+        )
+
+    async def chat_complete(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, Any]:
+        token_estimate = sum(len(m.get("content", "").split()) for m in messages)
+        if self.budget and self.cost_spent >= self.budget:
+            raise RuntimeError("Budget exhausted")
+
+        await self._throttle(token_estimate + kwargs.get("max_tokens", 0))
+
+        attempts = 0
+        while True:
             try:
-                resp = await self.client.chat.completions.create(model=self.model, messages=messages)
-                return resp.choices[0].message.content
-            except Exception as e:
-                if attempt == max_retries - 1:
+                resp = await self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    **kwargs,
+                )
+                if hasattr(resp, "usage"):
+                    self._update_cost(resp.usage.dict())
+                return resp.model_dump() if hasattr(resp, "model_dump") else resp
+            except (openai.RateLimitError, ClientError) as e:
+                attempts += 1
+                if attempts > self.retry_limit:
                     raise
-                await asyncio.sleep(delay)
-                delay = min(delay * 2, 20)
-        raise RuntimeError("Exceeded max retries")
+                await asyncio.sleep(2 ** attempts)
+            except Exception:
+                attempts += 1
+                if attempts > self.retry_limit:
+                    raise
+                await asyncio.sleep(2 ** attempts)
+

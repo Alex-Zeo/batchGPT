@@ -88,6 +88,14 @@ Using the Batch API can save you **50% on token costs** for non-time-sensitive t
 
 ## Directory Structure
 
+- `orchestrator.py` - High level pipeline for PDF processing
+- `openai_client.py` - Async OpenAI client with retry and budget control
+- `tokenizer.py` - Token counting and chunking utilities
+- `pdf_loader.py` - PDF loading and hashing helpers
+- `prompt_store.py` - Simple JSONL prompt store
+- `postprocessor.py` - Merge model responses
+- `cli.py` - Rich command line interface
+
 - `app.py` - Main Streamlit application
 - `openai_batch.py` - OpenAI batch API integration
 - `batch_manager.py` - Batch job tracking and management
@@ -124,3 +132,15 @@ The combined result for each PDF is printed to stdout.
 ## License
 
 MIT License 
+
+## Command Line Interface
+
+A lightweight CLI is provided to process PDFs directly from the terminal.
+
+```bash
+python cli.py path/to/file.pdf --model gpt-3.5-turbo --budget 5 --output results.jsonl
+```
+
+The CLI loads the PDF, splits it into token sized chunks and streams each chunk
+through the OpenAI API using an asynchronous client with basic retry and
+throttling. Results are stored in the specified JSONL output file.
