@@ -82,19 +82,26 @@ class BatchManager:
             logger.info(f"Created batch storage directory: {self.storage_dir}")
     
     def add_batch(self, batch_id: str, batch_info: Dict) -> None:
-        """Add a new batch job or update an existing one"""
+        """Add a new batch job or update an existing one.
+
+        ``batch_info`` can be either a dictionary or a :class:`BatchJob` instance.
+        """
         if isinstance(batch_info, dict):
             # Create BatchJob from dictionary
             if "id" not in batch_info:
                 batch_info["id"] = batch_id
             batch_job = BatchJob.from_dict(batch_info)
+        elif isinstance(batch_info, BatchJob):
+            # Use the provided BatchJob instance directly
+            batch_job = batch_info
+            batch_job.id = batch_id
         else:
-            # Create new BatchJob
+            # Create new BatchJob from an object with similar attributes
             batch_job = BatchJob(
                 batch_id=batch_id,
-                status=batch_info.get("status", "unknown"),
-                created_at=batch_info.get("created_at"),
-                model=batch_info.get("model")
+                status=getattr(batch_info, "status", "unknown"),
+                created_at=getattr(batch_info, "created_at", None),
+                model=getattr(batch_info, "model", None)
             )
         
         self.batches[batch_id] = batch_job
