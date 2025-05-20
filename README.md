@@ -85,6 +85,18 @@ Using the Batch API can save you **50% on token costs** for non-time-sensitive t
    streamlit run app.py
    ```
 
+## CLI Examples
+
+Run prompts from a local directory using `cli.py`:
+```bash
+python cli.py prompts/ --model gpt-4 --budget 10 --glob "*.md"
+```
+
+Read prompts from S3 and hide their contents in logs:
+```bash
+python cli.py s3://my-bucket/prompts.txt --redact
+```
+
 ## Directory Structure
 
 - `app.py` - Main Streamlit application

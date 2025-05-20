@@ -11,3 +11,5 @@ loguru>=0.7.0
 watchdog>=3.0.0
 uuid>=1.30
 PyPDF2>=3.0.0
+rich-click>=1.7.0
+boto3>=1.28.0
