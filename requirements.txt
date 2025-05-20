@@ -12,3 +12,5 @@ watchdog>=3.0.0
 uuid>=1.30
 PyPDF2>=3.0.0
 rich_click>=1.7.0
+tiktoken>=0.5.1
+
