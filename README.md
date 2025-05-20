@@ -43,6 +43,7 @@ A streamlined interface for OpenAI's batch processing API. This tool allows you 
 - **Auto-detect and manage** batch jobs
 - **Track costs and performance** metrics
 - **Beautiful Streamlit UI** for easy interaction
+- **WowRunner PDF wrapper** with async CLI for chunked chat completions
 
 ## Cost Savings with Batch API
 
@@ -85,13 +86,54 @@ Using the Batch API can save you **50% on token costs** for non-time-sensitive t
    streamlit run app.py
    ```
 
+## CLI Examples
+
+Run prompts from a local directory using `cli.py`:
+```bash
+python cli.py prompts/ --model gpt-4 --budget 10 --glob "*.md"
+```
+
+Read prompts from S3 and hide their contents in logs:
+```bash
+python cli.py s3://my-bucket/prompts.txt --redact
+```
+
 ## Directory Structure
+
+- `orchestrator.py` - High level pipeline for PDF processing
+- `openai_client.py` - Async OpenAI client with retry and budget control
+- `tokenizer.py` - Token counting and chunking utilities
+- `pdf_loader.py` - PDF loading and hashing helpers
+- `prompt_store.py` - Simple JSONL prompt store
+- `postprocessor.py` - Merge model responses
+- `cli.py` - Rich command line interface
 
 - `app.py` - Main Streamlit application
 - `openai_batch.py` - OpenAI batch API integration
 - `batch_manager.py` - Batch job tracking and management
 - `file_processor.py` - File processing utilities
 - `utils.py` - Helper functions and utilities
+- `wowrunner.py` - High level runner using the orchestrator
+- `orchestrator.py` - Async coordination of chunked requests
+- `openai_client.py` - Thin async wrapper with retries
+- `pdf_loader.py` - PDF text extraction helper
+- `tokenizer.py` - Token-aware chunking utilities
+- `prompt_store.py` - Loads system and user prompts
+- `postprocessor.py` - Combines chunked responses
+- `cli.py` - Command line interface for WowRunner
+- `wowsystem.md` - System prompt
+- `wowuser.md` - User prompt template
+
+## WowRunner
+
+Use `cli.py` or the `WowRunner` class to process PDFs with the prompts stored in
+`wowsystem.md` and `wowuser.md`.
+
+```bash
+python cli.py myfile.pdf --model gpt-4o
+```
+
+The combined result for each PDF is printed to stdout.
 
 ## Requirements
 
@@ -102,3 +144,15 @@ Using the Batch API can save you **50% on token costs** for non-time-sensitive t
 ## License
 
 MIT License 
+
+## Command Line Interface
+
+A lightweight CLI is provided to process PDFs directly from the terminal.
+
+```bash
+python cli.py path/to/file.pdf --model gpt-3.5-turbo --budget 5 --output results.jsonl
+```
+
+The CLI loads the PDF, splits it into token sized chunks and streams each chunk
+through the OpenAI API using an asynchronous client with basic retry and
+throttling. Results are stored in the specified JSONL output file.

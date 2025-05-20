@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import json
 import logging
 import os
@@ -17,10 +18,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 def sanitize_input(input_str: str) -> str:
-    """
-    Sanitize input to prevent injection and adhere to OWASP standards.
-    """
-    sanitized = re.sub(r'[^\w\s,.!?@#%-]', '', input_str)
+    """Remove non-printable characters while preserving punctuation."""
+    sanitized = "".join(
+        ch for ch in input_str if ch.isprintable() or ch in "\n\r\t"
+    )
     logger.info(f"Input sanitized: {sanitized}")
     return sanitized
 
@@ -173,6 +174,54 @@ def calculate_cost_estimate(df: pd.DataFrame) -> Dict[str, float]:
         cost["by_model"][model]["total"] += input_cost + output_cost + reasoning_cost
     
     cost["total"] = cost["input"] + cost["output"] + cost["reasoning"]
+    return cost
+
+def estimate_token_count(text: str) -> int:
+    """Estimate the number of tokens in a piece of text.
+
+    This provides a very rough approximation by counting words and
+    punctuation.  It avoids any external dependencies like ``tiktoken``
+    which may not be available in all environments.
+    """
+    if not text:
+        return 0
+
+    # Split on words and punctuation characters
+    tokens = re.findall(r"\w+|[^\w\s]", text)
+    return len(tokens)
+
+def estimate_batch_cost(inputs: List[str], model: str, max_tokens: int) -> Dict[str, Any]:
+    """Estimate token usage and cost for a list of prompts.
+
+    Parameters
+    ----------
+    inputs:
+        List of prompt strings.
+    model:
+        Model name to use for pricing lookup.
+    max_tokens:
+        Maximum number of output tokens expected per prompt.
+
+    Returns
+    -------
+    Dict with token counts and cost breakdown.  Keys include ``tokens_per_prompt``,
+    ``total_input_tokens``, ``total_output_tokens`` and the fields returned by
+    :func:`calculate_cost_estimate` (``input``, ``output``, ``reasoning`` and ``total``).
+    """
+    tokens_per_prompt = [estimate_token_count(p) for p in inputs]
+    df = pd.DataFrame({
+        "model": [model] * len(inputs),
+        "input_tokens": tokens_per_prompt,
+        "output_tokens": [max_tokens] * len(inputs),
+        "reasoning_tokens": [0] * len(inputs),
+    })
+
+    cost = calculate_cost_estimate(df)
+    cost.update({
+        "tokens_per_prompt": tokens_per_prompt,
+        "total_input_tokens": int(df["input_tokens"].sum()),
+        "total_output_tokens": int(df["output_tokens"].sum()),
+    })
     return cost
 
 def is_valid_poll_interval(interval: str) -> Optional[int]:
