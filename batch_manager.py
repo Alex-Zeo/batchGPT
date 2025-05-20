@@ -2,7 +2,7 @@ import os
 import json
 import time
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 import glob
 from loguru import logger
@@ -81,20 +81,30 @@ class BatchManager:
             os.makedirs(self.storage_dir)
             logger.info(f"Created batch storage directory: {self.storage_dir}")
     
-    def add_batch(self, batch_id: str, batch_info: Dict) -> None:
-        """Add a new batch job or update an existing one"""
-        if isinstance(batch_info, dict):
+    def add_batch(self, batch_id: str, batch_info: Union[Dict, BatchJob]) -> None:
+        """Add a new batch job or update an existing one.
+
+        `batch_info` may be a dictionary of batch data or an existing
+        :class:`BatchJob` object.
+        """
+        if isinstance(batch_info, BatchJob):
+            # Use the provided BatchJob instance directly
+            batch_job = batch_info
+            # Ensure the ID matches the key used in the manager
+            if batch_job.id != batch_id:
+                batch_job.id = batch_id
+        elif isinstance(batch_info, dict):
             # Create BatchJob from dictionary
             if "id" not in batch_info:
                 batch_info["id"] = batch_id
             batch_job = BatchJob.from_dict(batch_info)
         else:
-            # Create new BatchJob
+            # Fallback: treat as a simple object with attributes
             batch_job = BatchJob(
                 batch_id=batch_id,
-                status=batch_info.get("status", "unknown"),
-                created_at=batch_info.get("created_at"),
-                model=batch_info.get("model")
+                status=getattr(batch_info, "status", "unknown"),
+                created_at=getattr(batch_info, "created_at", None),
+                model=getattr(batch_info, "model", None)
             )
         
         self.batches[batch_id] = batch_job
