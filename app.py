@@ -1011,6 +1011,19 @@ with tab4:
 with tab5:
     st.header("Logs")
 
+    
+    # Show logs toggle
+    if st.session_state.show_logs:
+        if st.button("Hide Logs"):
+            st.session_state.show_logs = False
+    else:
+        if st.button("Show Logs"):
+            st.session_state.show_logs = True
+    
+    # Get logs button
+    if st.button("Get Logs"):
+
+
     # Show logs toggle using button return value
     toggle_pressed = st.button(
         "Hide Logs" if st.session_state.show_logs else "Show Logs",
@@ -1021,6 +1034,7 @@ with tab5:
 
     # Get logs button and display logs when visible
     if st.session_state.show_logs and st.button("Get Logs"):
+
         logs = get_recent_logs()
         st.code("\n".join(logs), language="text")
 
