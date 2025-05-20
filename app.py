@@ -993,17 +993,17 @@ with tab4:
 # Tab 5: Logs
 with tab5:
     st.header("Logs")
-    
-    # Show logs toggle
-    if st.session_state.show_logs:
-        st.session_state.show_logs = False
-        st.button("Hide Logs")
-    else:
-        st.session_state.show_logs = True
-        st.button("Show Logs")
-    
-    # Get logs button
-    if st.button("Get Logs"):
+
+    # Show logs toggle using button return value
+    toggle_pressed = st.button(
+        "Hide Logs" if st.session_state.show_logs else "Show Logs",
+        key="toggle-logs",
+    )
+    if toggle_pressed:
+        st.session_state.show_logs = not st.session_state.show_logs
+
+    # Get logs button and display logs when visible
+    if st.session_state.show_logs and st.button("Get Logs"):
         logs = get_recent_logs()
         st.code("\n".join(logs), language="text")
 
