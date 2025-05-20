@@ -7,7 +7,15 @@ import logging
 import pandas as pd
 from typing import List, Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
-from utils import sanitize_input, write_jsonl, read_jsonl, calculate_batch_size, logger, validate_api_key
+from utils import (
+    sanitize_input,
+    write_jsonl,
+    read_jsonl,
+    calculate_batch_size,
+    logger,
+    validate_api_key,
+    estimate_batch_cost,
+)
 import uuid
 
 # Load environment variables
@@ -433,17 +441,20 @@ async def prepare_batch_requests(
     return batch_requests
 
 async def run_batch(
-    inputs: List[str], 
-    model: str, 
+    inputs: List[str],
+    model: str,
     reasoning_effort: str = "medium",
     temperature: float = 0.7,
     max_tokens: int = 1024,
     response_format: str = "json_object",
-    max_batch_size: int = 5000
+    max_batch_size: int = 5000,
+    budget: float = None
 ) -> Any:
     """
     Complete batch lifecycle with dynamic batch sizing.
-    Returns the batch job or a list of batch jobs if multiple batches were created.
+    If ``budget`` is provided, the run will abort if the predicted cost exceeds
+    that value.  Returns the batch job or a list of batch jobs if multiple
+    batches were created.
     """
     # Check API key validity before starting
     if not validate_api_key():
@@ -451,6 +462,25 @@ async def run_batch(
     
     if not inputs:
         raise ValueError("No inputs provided for batch processing.")
+
+    # Estimate cost and abort if it exceeds the optional budget
+    try:
+        estimate = estimate_batch_cost(inputs, model, max_tokens)
+        logger.info(
+            f"Estimated input tokens: {estimate['total_input_tokens']}, "
+            f"output tokens: {estimate['total_output_tokens']}"
+        )
+        logger.info(
+            f"Predicted cost for run: ${estimate['total']:.4f}"
+        )
+        if budget is not None and estimate["total"] > budget:
+            raise ValueError(
+                f"Estimated cost ${estimate['total']:.4f} exceeds budget ${budget:.2f}"
+            )
+    except Exception as e:
+        # If estimation fails, log the error but continue
+        logger.error(f"Cost estimation failed: {str(e)}")
+
         
     # Validate model - make sure it's supported by OpenAI
     try:
@@ -515,9 +545,20 @@ async def run_single_batch(
     
     try:
         batch_requests = await prepare_batch_requests(
-            inputs, model, reasoning_effort, 
+            inputs, model, reasoning_effort,
             temperature, max_tokens, response_format
         )
+
+        # Log estimated token usage and cost for this batch
+        try:
+            estimate = estimate_batch_cost(inputs, model, max_tokens)
+            logger.info(
+                f"Batch estimate - input tokens: {estimate['total_input_tokens']}, "
+                f"output tokens: {estimate['total_output_tokens']}, "
+                f"cost: ${estimate['total']:.4f}"
+            )
+        except Exception as e:
+            logger.error(f"Cost estimation failed: {str(e)}")
 
         # Ensure batches directory exists
         os.makedirs("batches", exist_ok=True)

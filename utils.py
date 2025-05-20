@@ -175,6 +175,54 @@ def calculate_cost_estimate(df: pd.DataFrame) -> Dict[str, float]:
     cost["total"] = cost["input"] + cost["output"] + cost["reasoning"]
     return cost
 
+def estimate_token_count(text: str) -> int:
+    """Estimate the number of tokens in a piece of text.
+
+    This provides a very rough approximation by counting words and
+    punctuation.  It avoids any external dependencies like ``tiktoken``
+    which may not be available in all environments.
+    """
+    if not text:
+        return 0
+
+    # Split on words and punctuation characters
+    tokens = re.findall(r"\w+|[^\w\s]", text)
+    return len(tokens)
+
+def estimate_batch_cost(inputs: List[str], model: str, max_tokens: int) -> Dict[str, Any]:
+    """Estimate token usage and cost for a list of prompts.
+
+    Parameters
+    ----------
+    inputs:
+        List of prompt strings.
+    model:
+        Model name to use for pricing lookup.
+    max_tokens:
+        Maximum number of output tokens expected per prompt.
+
+    Returns
+    -------
+    Dict with token counts and cost breakdown.  Keys include ``tokens_per_prompt``,
+    ``total_input_tokens``, ``total_output_tokens`` and the fields returned by
+    :func:`calculate_cost_estimate` (``input``, ``output``, ``reasoning`` and ``total``).
+    """
+    tokens_per_prompt = [estimate_token_count(p) for p in inputs]
+    df = pd.DataFrame({
+        "model": [model] * len(inputs),
+        "input_tokens": tokens_per_prompt,
+        "output_tokens": [max_tokens] * len(inputs),
+        "reasoning_tokens": [0] * len(inputs),
+    })
+
+    cost = calculate_cost_estimate(df)
+    cost.update({
+        "tokens_per_prompt": tokens_per_prompt,
+        "total_input_tokens": int(df["input_tokens"].sum()),
+        "total_output_tokens": int(df["output_tokens"].sum()),
+    })
+    return cost
+
 def is_valid_poll_interval(interval: str) -> Optional[int]:
     """
     Validate and convert poll interval string to seconds.
