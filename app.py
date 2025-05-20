@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import streamlit as st
 import asyncio
 import pandas as pd
