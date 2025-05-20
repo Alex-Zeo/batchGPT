@@ -1,20 +1,47 @@
-import asyncio
-import rich_click as click
-from wowrunner import WowRunner
+from pathlib import Path
+
+import click
+
+try:
+    import rich_click as click  # type: ignore
+except Exception:  # pragma: no cover
+    import click  # type: ignore  # noqa: F401
+
+from orchestrator import run_pdf
 
 
 @click.command()
-@click.argument('prompt_source')
-@click.option('--model', default='gpt-3.5-turbo', help='Model to use')
-@click.option('--budget', type=float, help='Budget limit in USD')
-@click.option('--redact', is_flag=True, help='Hide prompt contents in logs')
-@click.option('--glob', 'glob_pattern', default='*.txt', help='Glob pattern for directories')
-def main(prompt_source: str, model: str, budget: float, redact: bool, glob_pattern: str):
-    """Run a batch from PROMPT_SOURCE using the WowRunner."""
-    runner = WowRunner(prompt_source, model=model, budget=budget, redact=redact, glob_pattern=glob_pattern)
-    asyncio.run(runner.run())
+@click.argument("pdf", type=click.Path(exists=True))
+@click.option("--model", default="gpt-3.5-turbo", help="Model name")
+@click.option("--budget", type=float, default=None, help="Budget in dollars")
+@click.option("--output", type=click.Path(), default=None, help="Output store file")
+def main(pdf: str, model: str, budget: float, output: str) -> None:
+    """Process a PDF through OpenAI and store results."""
+    result = asyncio.run(run_pdf(Path(pdf), model=model, budget=budget, output=output))
+    click.echo(result)
+
+import argparse
+import asyncio
+from pathlib import Path
+from orchestrator import Orchestrator
+from postprocessor import merge_results
 
 
-if __name__ == '__main__':
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run WowRunner on PDFs")
+    parser.add_argument("pdf", nargs="+", type=Path, help="PDF file(s) to process")
+    parser.add_argument("--model", default="gpt-4o", help="OpenAI model name")
+    parser.add_argument("--parallelism", type=int, default=5, help="Number of concurrent requests")
+    args = parser.parse_args()
+
+    orchestrator = Orchestrator(model=args.model, parallelism=args.parallelism)
+
+    for pdf_path in args.pdf:
+        results = asyncio.run(orchestrator.run(pdf_path))
+        combined = merge_results(results)
+        print(f"--- {pdf_path.name} ---")
+        print(combined)
+
+
+if __name__ == "__main__":
     main()
-
