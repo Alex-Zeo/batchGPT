@@ -43,6 +43,7 @@ A streamlined interface for OpenAI's batch processing API. This tool allows you 
 - **Auto-detect and manage** batch jobs
 - **Track costs and performance** metrics
 - **Beautiful Streamlit UI** for easy interaction
+- **WowRunner PDF wrapper** with async CLI for chunked chat completions
 
 ## Cost Savings with Batch API
 
@@ -92,6 +93,27 @@ Using the Batch API can save you **50% on token costs** for non-time-sensitive t
 - `batch_manager.py` - Batch job tracking and management
 - `file_processor.py` - File processing utilities
 - `utils.py` - Helper functions and utilities
+- `wowrunner.py` - High level runner using the orchestrator
+- `orchestrator.py` - Async coordination of chunked requests
+- `openai_client.py` - Thin async wrapper with retries
+- `pdf_loader.py` - PDF text extraction helper
+- `tokenizer.py` - Token-aware chunking utilities
+- `prompt_store.py` - Loads system and user prompts
+- `postprocessor.py` - Combines chunked responses
+- `cli.py` - Command line interface for WowRunner
+- `wowsystem.md` - System prompt
+- `wowuser.md` - User prompt template
+
+## WowRunner
+
+Use `cli.py` or the `WowRunner` class to process PDFs with the prompts stored in
+`wowsystem.md` and `wowuser.md`.
+
+```bash
+python cli.py myfile.pdf --model gpt-4o
+```
+
+The combined result for each PDF is printed to stdout.
 
 ## Requirements
 

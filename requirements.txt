@@ -11,3 +11,4 @@ loguru>=0.7.0
 watchdog>=3.0.0
 uuid>=1.30
 PyPDF2>=3.0.0
+tiktoken>=0.5.1
