@@ -7,6 +7,7 @@ import logging
 import pandas as pd
 from typing import List, Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
+from postprocessor import validate_openai_response
 from utils import sanitize_input, write_jsonl, read_jsonl, calculate_batch_size, logger, validate_api_key
 import uuid
 
@@ -357,7 +358,15 @@ async def retrieve_batch_results(batch_status: Any) -> Tuple[List[Dict], List[Di
                         # Parse JSONL content
                         for line in output_content.splitlines():
                             if line.strip():
-                                results.append(json.loads(line))
+                                item = json.loads(line)
+                                if "choices" in item and item["choices"]:
+                                    content = item["choices"][0].get("message", {}).get("content", "")
+                                    try:
+                                        validated = validate_openai_response(content)
+                                        item["validated"] = validated.dict()
+                                    except Exception as ve:
+                                        item["validation_error"] = str(ve)
+                                results.append(item)
         
         # Get error results if any
         if batch_status.error_file_id:
