@@ -996,11 +996,11 @@ with tab5:
     
     # Show logs toggle
     if st.session_state.show_logs:
-        st.session_state.show_logs = False
-        st.button("Hide Logs")
+        if st.button("Hide Logs"):
+            st.session_state.show_logs = False
     else:
-        st.session_state.show_logs = True
-        st.button("Show Logs")
+        if st.button("Show Logs"):
+            st.session_state.show_logs = True
     
     # Get logs button
     if st.button("Get Logs"):
