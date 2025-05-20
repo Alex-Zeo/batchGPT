@@ -1,4 +1,3 @@
-import asyncio
 from pathlib import Path
 
 import click
@@ -20,7 +19,7 @@ def main(pdf: str, model: str, budget: float, output: str) -> None:
     """Process a PDF through OpenAI and store results."""
     result = asyncio.run(run_pdf(Path(pdf), model=model, budget=budget, output=output))
     click.echo(result)
-=======
+
 import argparse
 import asyncio
 from pathlib import Path
