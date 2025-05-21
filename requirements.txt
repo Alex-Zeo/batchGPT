@@ -14,3 +14,4 @@ uuid>=1.30
 pydantic>=1.10.0
 rich_click>=1.7.0
 tiktoken>=0.5.1
+pytest>=8.0

@@ -8,7 +8,7 @@ import logging
 import pandas as pd
 from typing import List, Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
-from utils import (
+from .utils import (
     sanitize_input,
     write_jsonl,
     read_jsonl,
@@ -18,10 +18,11 @@ from utils import (
     estimate_batch_cost,
 )
 
-from postprocessor import validate_openai_response
-from utils import sanitize_input, write_jsonl, read_jsonl, calculate_batch_size, logger, validate_api_key
+from .postprocessor import validate_openai_response
 
 import uuid
+
+BATCHES_DIR = os.path.join(os.path.dirname(__file__), "batches")
 
 # Load environment variables
 load_dotenv()
@@ -119,9 +120,9 @@ async def list_batch_compatible_models() -> List[str]:
         
         # Prepare a small test request to check batch compatibility
         test_content = "This is a test message to check batch compatibility."
-        test_file_path = os.path.join("batches", f"batch_test_{uuid.uuid4().hex[:8]}.jsonl")
-        
-        os.makedirs("batches", exist_ok=True)
+        test_file_path = os.path.join(BATCHES_DIR, f"batch_test_{uuid.uuid4().hex[:8]}.jsonl")
+
+        os.makedirs(BATCHES_DIR, exist_ok=True)
         
         # Create a minimal test request
         test_request = {
@@ -574,11 +575,11 @@ async def run_single_batch(
             logger.error(f"Cost estimation failed: {str(e)}")
 
         # Ensure batches directory exists
-        os.makedirs("batches", exist_ok=True)
+        os.makedirs(BATCHES_DIR, exist_ok=True)
 
         # Use a unique filename to avoid collisions
         temp_input_filename = f"batch_input_{uuid.uuid4().hex}.jsonl"
-        input_path = os.path.join("batches", temp_input_filename)
+        input_path = os.path.join(BATCHES_DIR, temp_input_filename)
         write_jsonl(batch_requests, input_path)
 
         try:
@@ -590,7 +591,7 @@ async def run_single_batch(
             
             # Rename the input file to match the batch ID for tracking
             batch_id = batch_job.id
-            new_input_path = os.path.join("batches", f"{batch_id}.jsonl")
+            new_input_path = os.path.join(BATCHES_DIR, f"{batch_id}.jsonl")
             
             try:
                 if os.path.exists(input_path):

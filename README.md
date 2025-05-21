@@ -83,7 +83,7 @@ Using the Batch API can save you **50% on token costs** for non-time-sensitive t
    ```
 4. Run the application:
    ```bash
-   streamlit run app.py
+   streamlit run streamlit/app.py
    ```
 
 ## CLI Examples
@@ -100,34 +100,24 @@ python cli.py s3://my-bucket/prompts.txt --redact
 
 ## Directory Structure
 
-- `orchestrator.py` - High level pipeline for PDF processing
-- `openai_client.py` - Async OpenAI client with retry and budget control
-- `tokenizer.py` - Token counting and chunking utilities
-- `pdf_loader.py` - PDF loading and hashing helpers
-- `prompt_store.py` - Simple JSONL prompt store
-- `postprocessor.py` - Merge model responses
-- `cli.py` - Rich command line interface
-
-- `app.py` - Main Streamlit application
-- `openai_batch.py` - OpenAI batch API integration
-- `batch_manager.py` - Batch job tracking and management
-- `file_processor.py` - File processing utilities
-- `utils.py` - Helper functions and utilities
-- `wowrunner.py` - High level runner using the orchestrator
-- `orchestrator.py` - Async coordination of chunked requests
-- `openai_client.py` - Thin async wrapper with retries
-- `pdf_loader.py` - PDF text extraction helper
-- `tokenizer.py` - Token-aware chunking utilities
-- `prompt_store.py` - Loads system and user prompts
-- `postprocessor.py` - Combines chunked responses
-- `cli.py` - Command line interface for WowRunner
-- `wowsystem.md` - System prompt
-- `wowuser.md` - User prompt template
+- `app/` - Core library modules
+  - `openai_batch.py` - OpenAI batch API integration
+  - `openai_client.py` - Async OpenAI client with retry and budget control
+  - `batch_manager.py` - Batch job tracking and management
+  - `file_processor.py` - File processing utilities
+  - `utils.py` - Helper utilities
+  - `tokenizer.py` - Token counting and chunking
+  - `pdfreader/pdf_loader.py` - PDF helpers
+  - `prompt_store.py` - Prompt loading utilities
+  - `postprocessor.py` - Combine chunked responses
+  - `wowrunner.py` - High level batch runner
+- `streamlit/app.py` - Main Streamlit application
+- `prompts/wow_r/` - Default prompts
 
 ## WowRunner
 
 Use `cli.py` or the `WowRunner` class to process PDFs with the prompts stored in
-`wowsystem.md` and `wowuser.md`.
+`prompts/wow_r/wowsystem.md` and `prompts/wow_r/wowuser.md`.
 
 ```bash
 python cli.py myfile.pdf --model gpt-4o
