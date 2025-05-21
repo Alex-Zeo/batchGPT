@@ -1,11 +1,11 @@
 import asyncio
 from typing import List, Dict
 
-from openai_client import AsyncOpenAIClient
-from tokenizer import Tokenizer
-from pdf_loader import chunk_pdf
-from prompt_store import PromptStore
-from postprocessor import merge_chunks
+from .openai_client import AsyncOpenAIClient
+from .tokenizer import Tokenizer
+from .pdfreader.pdf_loader import chunk_pdf
+from .prompt_store import PromptStore
+from .postprocessor import merge_chunks
 
 
 class Orchestrator:

@@ -1,4 +1,4 @@
-from file_processor import detect_file_type
+from app.file_processor import detect_file_type
 
 
 def test_detect_file_type():

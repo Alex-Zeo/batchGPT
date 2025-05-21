@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import hashlib
 from pathlib import Path
-
 from typing import List, Tuple
 
 import pdfplumber
 
-from tokenizer import Tokenizer
+from ..tokenizer import Tokenizer
 
 
 def load_pdf(path: str) -> Tuple[str, str]:
@@ -14,7 +15,7 @@ def load_pdf(path: str) -> Tuple[str, str]:
     with p.open("rb") as f:
         data = f.read()
     text = ""
-    with pdfplumber.open(Path(path)) as pdf:
+    with pdfplumber.open(p) as pdf:
         for page in pdf.pages:
             text += page.extract_text() or ""
             text += "\n\n"
@@ -23,19 +24,7 @@ def load_pdf(path: str) -> Tuple[str, str]:
 
 
 def chunk_pdf(path: str, tokenizer: Tokenizer, max_tokens: int = 2000, overlap: int = 50) -> Tuple[str, List[str], str]:
+    """Load, chunk and return the PDF text, chunks and hash."""
     text, digest = load_pdf(path)
     chunks = tokenizer.chunk(text, max_tokens=max_tokens, overlap=overlap)
     return text, chunks, digest
-=======
-from typing import Tuple
-import pdfplumber
-
-
-def load_pdf_text(path: Path) -> Tuple[str, str]:
-    """Return text and sha256 hash for a PDF."""
-    text = ""
-    with pdfplumber.open(str(path)) as pdf:
-        for page in pdf.pages:
-            text += (page.extract_text() or "") + "\n"
-    sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    return text, sha256

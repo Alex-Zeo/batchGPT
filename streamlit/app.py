@@ -10,21 +10,21 @@ import json
 import uuid
 from datetime import datetime
 from io import BytesIO
-from openai_batch import (
+from app.openai_batch import (
     run_batch, retrieve_batch_status, retrieve_batch_results, 
     list_available_models, list_batch_compatible_models, poll_batch_until_complete, refresh_api_key
 )
-from utils import (
+from app.utils import (
     is_valid_poll_interval, format_time_elapsed, 
     format_batch_results, calculate_cost_estimate, validate_api_key,
     generate_unique_id, format_timestamp, deduplicate_prompts, 
     expand_results, format_batch_summary
 )
-from file_processor import (
+from app.file_processor import (
     process_uploaded_file, process_multiple_files, split_text_into_chunks, 
     detect_file_type, generate_summary, setup_logger
 )
-from batch_manager import batch_manager
+from app.batch_manager import batch_manager
 from dotenv import load_dotenv
 from loguru import logger
 
@@ -1011,20 +1011,6 @@ with tab4:
 with tab5:
     st.header("Logs")
 
-    
-    # Show logs toggle
-    if st.session_state.show_logs:
-        if st.button("Hide Logs"):
-            st.session_state.show_logs = False
-    else:
-        if st.button("Show Logs"):
-            st.session_state.show_logs = True
-    
-    # Get logs button
-    if st.button("Get Logs"):
-
-
-    # Show logs toggle using button return value
     toggle_pressed = st.button(
         "Hide Logs" if st.session_state.show_logs else "Show Logs",
         key="toggle-logs",
@@ -1032,9 +1018,7 @@ with tab5:
     if toggle_pressed:
         st.session_state.show_logs = not st.session_state.show_logs
 
-    # Get logs button and display logs when visible
     if st.session_state.show_logs and st.button("Get Logs"):
-
         logs = get_recent_logs()
         st.code("\n".join(logs), language="text")
 
