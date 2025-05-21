@@ -16,7 +16,9 @@ SCHEMA_JSON = WowResponse.schema_json(indent=2)
 def load_schema(path: str = None) -> Dict[str, Any]:
     """Load JSON schema from `wowsystem.md` if available."""
     if path is None:
-        path = os.path.join(os.path.dirname(__file__), "wowsystem.md")
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "prompts", "wow_r", "wowsystem.md"
+        )
     try:
         with open(path, "r") as f:
             content = f.read()

@@ -77,8 +77,9 @@ class PromptStore:
 from pathlib import Path
 from dataclasses import dataclass
 
-SYSTEM_PROMPT_PATH = Path("wowsystem.md")
-USER_PROMPT_PATH = Path("wowuser.md")
+BASE_DIR = Path(__file__).resolve().parent.parent
+SYSTEM_PROMPT_PATH = BASE_DIR / "prompts" / "wow_r" / "wowsystem.md"
+USER_PROMPT_PATH = BASE_DIR / "prompts" / "wow_r" / "wowuser.md"
 
 
 @dataclass

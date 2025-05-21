@@ -7,7 +7,7 @@ try:
 except Exception:  # pragma: no cover
     import click  # type: ignore  # noqa: F401
 
-from orchestrator import run_pdf
+from .orchestrator import run_pdf
 
 
 @click.command()
@@ -23,8 +23,8 @@ def main(pdf: str, model: str, budget: float, output: str) -> None:
 import argparse
 import asyncio
 from pathlib import Path
-from orchestrator import Orchestrator
-from postprocessor import merge_results
+from .orchestrator import Orchestrator
+from .postprocessor import merge_results
 
 
 def main() -> None:

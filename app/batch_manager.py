@@ -69,8 +69,10 @@ class BatchJob:
 
 class BatchManager:
     """Manager for batch jobs with persistence and tracking"""
-    
-    def __init__(self, storage_dir: str = "batch_data"):
+
+    def __init__(self, storage_dir: str = None):
+        if storage_dir is None:
+            storage_dir = os.path.join(os.path.dirname(__file__), "batches")
         self.storage_dir = storage_dir
         self.batches = {}  # In-memory cache of batch jobs
         self.ensure_storage_dir()
@@ -242,11 +244,13 @@ class BatchManager:
         
         # Next, scan for batch input JSONL files that might not be loaded yet
         # Check if batches directory exists
-        batches_dir = "batches"
+        batches_dir = os.path.join(os.path.dirname(__file__), "batches")
         if os.path.exists(batches_dir) and os.path.isdir(batches_dir):
             # Look for files that match the batch ID format (batch_*)
             batch_input_files = glob.glob(os.path.join(batches_dir, "batch_*.jsonl"))
-            logger.info(f"Found {len(batch_input_files)} batch input files in {batches_dir}")
+            logger.info(
+                f"Found {len(batch_input_files)} batch input files in {batches_dir}"
+            )
             
             for input_file in batch_input_files:
                 batch_id = os.path.basename(input_file).replace(".jsonl", "")

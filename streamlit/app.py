@@ -10,21 +10,21 @@ import json
 import uuid
 from datetime import datetime
 from io import BytesIO
-from openai_batch import (
+from app.openai_batch import (
     run_batch, retrieve_batch_status, retrieve_batch_results, 
     list_available_models, list_batch_compatible_models, poll_batch_until_complete, refresh_api_key
 )
-from utils import (
+from app.utils import (
     is_valid_poll_interval, format_time_elapsed, 
     format_batch_results, calculate_cost_estimate, validate_api_key,
     generate_unique_id, format_timestamp, deduplicate_prompts, 
     expand_results, format_batch_summary
 )
-from file_processor import (
+from app.file_processor import (
     process_uploaded_file, process_multiple_files, split_text_into_chunks, 
     detect_file_type, generate_summary, setup_logger
 )
-from batch_manager import batch_manager
+from app.batch_manager import batch_manager
 from dotenv import load_dotenv
 from loguru import logger
 

@@ -1,5 +1,5 @@
 import os
-import openai_batch
+from app import openai_batch
 
 
 def test_refresh_api_key(monkeypatch):

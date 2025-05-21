@@ -1,4 +1,4 @@
-from batch_manager import BatchManager
+from app.batch_manager import BatchManager
 
 
 def test_add_and_get_batch(tmp_path):
