@@ -14,30 +14,36 @@ import csv
 import io
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
+
 def sanitize_input(input_str: str) -> str:
-    """Remove non-printable characters and strip angle brackets."""
     sanitized = "".join(
-        ch for ch in input_str if ch.isprintable() or ch in "\n\r\t"
+        ch
+        for ch in input_str
+        if (ch.isprintable() or ch in "\n\r\t") and ch not in "<>"
     )
     sanitized = sanitized.replace("<", "").replace(">", "")
     logger.info(f"Input sanitized: {sanitized}")
     return sanitized
+
 
 def write_jsonl(data: List[Dict], file_path: str):
     """
     Writes a list of dictionaries to a JSONL file.
     """
     try:
-        with open(file_path, 'w') as file:
+        with open(file_path, "w") as file:
             for item in data:
-                file.write(json.dumps(item) + '\n')
+                file.write(json.dumps(item) + "\n")
         logger.info(f"Wrote {len(data)} items to {file_path}")
     except Exception as e:
         logger.error(f"Error writing to {file_path}: {str(e)}")
         raise
+
 
 def read_jsonl(file_path: str) -> List[Dict]:
     """
@@ -45,7 +51,7 @@ def read_jsonl(file_path: str) -> List[Dict]:
     """
     results = []
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, "r") as file:
             for line in file:
                 if line.strip():
                     results.append(json.loads(line))
@@ -55,6 +61,7 @@ def read_jsonl(file_path: str) -> List[Dict]:
         raise
     return results
 
+
 def calculate_batch_size(total_requests: int, max_batch_size: int = 5000) -> int:
     """
     Calculate optimal batch size based on the total number of requests.
@@ -62,44 +69,48 @@ def calculate_batch_size(total_requests: int, max_batch_size: int = 5000) -> int
     """
     if total_requests <= max_batch_size:
         return total_requests
-    
+
     # Find a divisor close to max_batch_size
     for size in range(max_batch_size, 1000, -500):
         if total_requests % size == 0 or total_requests % size < 100:
             return size
-    
+
     return max_batch_size
+
 
 def validate_api_key() -> bool:
     """
     Validate if the OpenAI API key is set and properly formatted.
     """
     api_key = os.getenv("OPENAI_API_KEY")
-    
+
     # Check if API key exists
     if not api_key:
         logger.error("OPENAI_API_KEY not set in environment")
         return False
-    
+
     # Check basic format for project keys (sk-proj-...) or standard keys (sk-...)
     if not (api_key.startswith("sk-") or api_key.startswith("org-")):
-        logger.error("OPENAI_API_KEY appears to be malformed (should start with 'sk-' or 'org-')")
+        logger.error(
+            "OPENAI_API_KEY appears to be malformed (should start with 'sk-' or 'org-')"
+        )
         return False
-        
+
     # Check minimum length for API keys
     if len(api_key) < 40:  # OpenAI keys are typically long
         logger.error("OPENAI_API_KEY appears too short to be valid")
         return False
-        
+
     logger.info("API key format validated")
     return True
+
 
 def format_batch_results(results: List[Dict]) -> pd.DataFrame:
     """
     Format batch results into a pandas DataFrame for easier analysis.
     """
     formatted_data = []
-    
+
     for item in results:
         entry = {
             "custom_id": item.get("custom_id", ""),
@@ -110,9 +121,9 @@ def format_batch_results(results: List[Dict]) -> pd.DataFrame:
             "reasoning_tokens": item.get("usage", {}).get("reasoning_tokens", 0),
             "total_tokens": item.get("usage", {}).get("total_tokens", 0),
             "model": item.get("model", ""),
-            "content": ""
+            "content": "",
         }
-        
+
         # Extract response content
         choices = item.get("choices", [])
         if choices and len(choices) > 0:
@@ -120,10 +131,11 @@ def format_batch_results(results: List[Dict]) -> pd.DataFrame:
             if message:
                 entry["content"] = message.get("content", "")
                 entry["role"] = message.get("role", "")
-        
+
         formatted_data.append(entry)
-    
+
     return pd.DataFrame(formatted_data)
+
 
 def calculate_cost_estimate(df: pd.DataFrame) -> Dict[str, float]:
     """
@@ -132,50 +144,72 @@ def calculate_cost_estimate(df: pd.DataFrame) -> Dict[str, float]:
     """
     model_pricing = {
         # Pro model pricing with 50% batch discount
-        "o1-pro": {"input": 75 / 1_000_000, "output": 300 / 1_000_000, "reasoning": 300 / 1_000_000},
-        "o1-mini": {"input": 8 / 1_000_000, "output": 12 / 1_000_000, "reasoning": 12 / 1_000_000},
+        "o1-pro": {
+            "input": 75 / 1_000_000,
+            "output": 300 / 1_000_000,
+            "reasoning": 300 / 1_000_000,
+        },
+        "o1-mini": {
+            "input": 8 / 1_000_000,
+            "output": 12 / 1_000_000,
+            "reasoning": 12 / 1_000_000,
+        },
         "gpt-4o": {"input": 3 / 1_000_000, "output": 15 / 1_000_000, "reasoning": 0},
         "gpt-4": {"input": 15 / 1_000_000, "output": 30 / 1_000_000, "reasoning": 0},
-        "gpt-3.5-turbo": {"input": 0.5 / 1_000_000, "output": 1.5 / 1_000_000, "reasoning": 0},
+        "gpt-3.5-turbo": {
+            "input": 0.5 / 1_000_000,
+            "output": 1.5 / 1_000_000,
+            "reasoning": 0,
+        },
         # Default pricing in case model is unknown
-        "default": {"input": 10 / 1_000_000, "output": 30 / 1_000_000, "reasoning": 0}
+        "default": {"input": 10 / 1_000_000, "output": 30 / 1_000_000, "reasoning": 0},
     }
-    
+
     cost = {"input": 0, "output": 0, "reasoning": 0, "total": 0, "by_model": {}}
-    
+
     for _, row in df.iterrows():
         model = row["model"].lower() if "model" in row and row["model"] else "default"
-        
+
         # Find the right pricing model
         price_model = None
         for key in model_pricing:
             if key in model:
                 price_model = model_pricing[key]
                 break
-        
+
         if not price_model:
             price_model = model_pricing["default"]
-        
+
         # Calculate costs
         input_cost = row["input_tokens"] * price_model["input"]
         output_cost = row["output_tokens"] * price_model["output"]
-        reasoning_cost = row["reasoning_tokens"] * price_model["reasoning"] if "reasoning_tokens" in row else 0
-        
+        reasoning_cost = (
+            row["reasoning_tokens"] * price_model["reasoning"]
+            if "reasoning_tokens" in row
+            else 0
+        )
+
         cost["input"] += input_cost
         cost["output"] += output_cost
         cost["reasoning"] += reasoning_cost
-        
+
         # Track by model
         if model not in cost["by_model"]:
-            cost["by_model"][model] = {"input": 0, "output": 0, "reasoning": 0, "total": 0}
-        
+            cost["by_model"][model] = {
+                "input": 0,
+                "output": 0,
+                "reasoning": 0,
+                "total": 0,
+            }
+
         cost["by_model"][model]["input"] += input_cost
         cost["by_model"][model]["output"] += output_cost
         cost["by_model"][model]["reasoning"] += reasoning_cost
         cost["by_model"][model]["total"] += input_cost + output_cost + reasoning_cost
-    
+
     cost["total"] = cost["input"] + cost["output"] + cost["reasoning"]
     return cost
+
 
 def estimate_token_count(text: str) -> int:
     """Estimate the number of tokens in a piece of text.
@@ -191,7 +225,10 @@ def estimate_token_count(text: str) -> int:
     tokens = re.findall(r"\w+|[^\w\s]", text)
     return len(tokens)
 
-def estimate_batch_cost(inputs: List[str], model: str, max_tokens: int) -> Dict[str, Any]:
+
+def estimate_batch_cost(
+    inputs: List[str], model: str, max_tokens: int
+) -> Dict[str, Any]:
     """Estimate token usage and cost for a list of prompts.
 
     Parameters
@@ -210,61 +247,68 @@ def estimate_batch_cost(inputs: List[str], model: str, max_tokens: int) -> Dict[
     :func:`calculate_cost_estimate` (``input``, ``output``, ``reasoning`` and ``total``).
     """
     tokens_per_prompt = [estimate_token_count(p) for p in inputs]
-    df = pd.DataFrame({
-        "model": [model] * len(inputs),
-        "input_tokens": tokens_per_prompt,
-        "output_tokens": [max_tokens] * len(inputs),
-        "reasoning_tokens": [0] * len(inputs),
-    })
+    df = pd.DataFrame(
+        {
+            "model": [model] * len(inputs),
+            "input_tokens": tokens_per_prompt,
+            "output_tokens": [max_tokens] * len(inputs),
+            "reasoning_tokens": [0] * len(inputs),
+        }
+    )
 
     cost = calculate_cost_estimate(df)
-    cost.update({
-        "tokens_per_prompt": tokens_per_prompt,
-        "total_input_tokens": int(df["input_tokens"].sum()),
-        "total_output_tokens": int(df["output_tokens"].sum()),
-    })
+    cost.update(
+        {
+            "tokens_per_prompt": tokens_per_prompt,
+            "total_input_tokens": int(df["input_tokens"].sum()),
+            "total_output_tokens": int(df["output_tokens"].sum()),
+        }
+    )
     return cost
+
 
 def is_valid_poll_interval(interval: str) -> Optional[int]:
     """
     Validate and convert poll interval string to seconds.
     Returns None if invalid, integer seconds if valid.
-    
+
     Accepts formats like "30s", "5m", "1h"
     """
     if not interval:
         return None
-    
-    pattern = r'^(\d+)([smh])$'
+
+    pattern = r"^(\d+)([smh])$"
     match = re.match(pattern, interval.lower())
-    
+
     if not match:
         return None
-    
+
     value, unit = match.groups()
     value = int(value)
-    
-    if unit == 's':
+
+    if unit == "s":
         return value
-    elif unit == 'm':
+    elif unit == "m":
         return value * 60
-    elif unit == 'h':
+    elif unit == "h":
         return value * 3600
-    
+
     return None
+
 
 def format_time_elapsed(start_time: float) -> str:
     """
     Format elapsed time since start_time in a human-readable format.
     """
     elapsed = time.time() - start_time
-    
+
     if elapsed < 60:
         return f"{elapsed:.1f} seconds"
     elif elapsed < 3600:
         return f"{elapsed/60:.1f} minutes"
     else:
         return f"{elapsed/3600:.1f} hours"
+
 
 def generate_unique_id(prefix: str = "batch") -> str:
     """
@@ -275,26 +319,30 @@ def generate_unique_id(prefix: str = "batch") -> str:
     timestamp = int(time.time())
     return f"{prefix}_{timestamp}_{random_id}"
 
-def format_timestamp(timestamp: Optional[str], 
-                    format_str: str = "%Y-%m-%d %H:%M:%S", 
-                    timezone: str = "UTC") -> str:
+
+def format_timestamp(
+    timestamp: Optional[str],
+    format_str: str = "%Y-%m-%d %H:%M:%S",
+    timezone: str = "UTC",
+) -> str:
     """
     Format an ISO timestamp to a more readable format.
     If timestamp is None or invalid, returns "N/A".
     """
     if not timestamp:
         return "N/A"
-    
+
     try:
         dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         if timezone != "UTC":
             # Convert to the specified timezone
             tz = pytz.timezone(timezone)
             dt = dt.astimezone(tz)
-        
+
         return dt.strftime(format_str)
     except Exception:
         return "N/A"
+
 
 def calculate_completion_time(start_time: str, expected_duration_minutes: int) -> str:
     """
@@ -307,6 +355,7 @@ def calculate_completion_time(start_time: str, expected_duration_minutes: int) -
         return completion_dt.strftime("%Y-%m-%d %H:%M:%S %Z")
     except Exception:
         return "Unknown"
+
 
 def export_results_to_csv(results: List[Dict], output_path: str) -> str:
     """
@@ -322,11 +371,13 @@ def export_results_to_csv(results: List[Dict], output_path: str) -> str:
         logger.error(f"Error exporting results to CSV: {str(e)}")
         raise
 
+
 def generate_hash(content: str) -> str:
     """
     Generate a hash of the content for deduplication purposes.
     """
-    return hashlib.md5(content.encode('utf-8')).hexdigest()
+    return hashlib.md5(content.encode("utf-8")).hexdigest()
+
 
 def deduplicate_prompts(prompts: List[str]) -> Tuple[List[str], Dict[str, List[int]]]:
     """
@@ -336,10 +387,10 @@ def deduplicate_prompts(prompts: List[str]) -> Tuple[List[str], Dict[str, List[i
     unique_prompts = []
     hash_to_indices = {}
     indices_to_hash = {}
-    
+
     for i, prompt in enumerate(prompts):
         prompt_hash = generate_hash(prompt)
-        
+
         if prompt_hash not in hash_to_indices:
             hash_to_indices[prompt_hash] = [i]
             indices_to_hash[i] = prompt_hash
@@ -347,34 +398,40 @@ def deduplicate_prompts(prompts: List[str]) -> Tuple[List[str], Dict[str, List[i
         else:
             hash_to_indices[prompt_hash].append(i)
             indices_to_hash[i] = prompt_hash
-    
-    logger.info(f"Deduplicated {len(prompts)} prompts to {len(unique_prompts)} unique prompts")
+
+    logger.info(
+        f"Deduplicated {len(prompts)} prompts to {len(unique_prompts)} unique prompts"
+    )
     return unique_prompts, hash_to_indices
 
-def expand_results(deduplicated_results: List[Dict], hash_to_indices: Dict[str, List[int]]) -> List[Dict]:
+
+def expand_results(
+    deduplicated_results: List[Dict], hash_to_indices: Dict[str, List[int]]
+) -> List[Dict]:
     """
     Expand deduplicated results back to the original size based on the hash mapping.
     """
     expanded_results = []
-    
+
     # Create a mapping from custom_id to result
     custom_id_to_result = {r.get("custom_id", ""): r for r in deduplicated_results}
-    
+
     # Expand results based on the hash mapping
     for prompt_hash, indices in hash_to_indices.items():
         for idx in indices:
             # Find the corresponding result
             result = custom_id_to_result.get(str(indices[0]), {})
-            
+
             # Create a copy with the updated custom_id
             result_copy = result.copy()
             result_copy["custom_id"] = str(idx)
             expanded_results.append(result_copy)
-    
+
     # Sort by custom_id to maintain original order
     expanded_results.sort(key=lambda x: int(x.get("custom_id", "0")))
-    
+
     return expanded_results
+
 
 def format_batch_summary(batch_info: Dict) -> str:
     """
@@ -385,36 +442,40 @@ def format_batch_summary(batch_info: Dict) -> str:
     model = batch_info.get("model", "Unknown")
     results_count = len(batch_info.get("results", []))
     errors_count = len(batch_info.get("errors", []))
-    
+
     # Calculate success rate
     total_requests = results_count + errors_count
     success_rate = (results_count / total_requests * 100) if total_requests > 0 else 0
-    
+
     summary = [
         f"Status: {status}",
         f"Created: {created_at}",
         f"Model: {model}",
         f"Results: {results_count}",
         f"Errors: {errors_count}",
-        f"Success Rate: {success_rate:.1f}%"
+        f"Success Rate: {success_rate:.1f}%",
     ]
-    
+
     # Add token usage if available
     if batch_info.get("results"):
         df = format_batch_results(batch_info["results"])
         total_input = df["input_tokens"].sum()
         total_output = df["output_tokens"].sum()
-        total_reasoning = df["reasoning_tokens"].sum() if "reasoning_tokens" in df.columns else 0
+        total_reasoning = (
+            df["reasoning_tokens"].sum() if "reasoning_tokens" in df.columns else 0
+        )
         total_tokens = total_input + total_output + total_reasoning
-        
-        summary.extend([
-            f"Input Tokens: {total_input:,}",
-            f"Output Tokens: {total_output:,}",
-            f"Total Tokens: {total_tokens:,}"
-        ])
-        
+
+        summary.extend(
+            [
+                f"Input Tokens: {total_input:,}",
+                f"Output Tokens: {total_output:,}",
+                f"Total Tokens: {total_tokens:,}",
+            ]
+        )
+
         # Add cost estimate
         cost = calculate_cost_estimate(df)
         summary.append(f"Estimated Cost: ${cost['total']:.4f}")
-    
+
     return "\n".join(summary)
