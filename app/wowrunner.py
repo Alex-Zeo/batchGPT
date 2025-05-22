@@ -29,7 +29,9 @@ class WowRunner:
         self.glob_pattern = glob_pattern
 
     async def run(self) -> None:
-        prompts = prompt_store.load_prompts(self.prompt_source, self.glob_pattern)
+        prompts = prompt_store.load_prompt_files(
+            self.prompt_source, self.glob_pattern
+        )
         logger.info(f"Loaded {len(prompts)} prompts from {self.prompt_source}")
         if self.redact:
             logger.info("Redact mode enabled - prompt contents hidden")
