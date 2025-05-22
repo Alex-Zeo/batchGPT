@@ -4,7 +4,6 @@ import asyncio
 import aiohttp
 import os
 import json
-import logging
 import pandas as pd
 from typing import List, Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
@@ -13,10 +12,10 @@ from .utils import (
     write_jsonl,
     read_jsonl,
     calculate_batch_size,
-    logger,
     validate_api_key,
     estimate_batch_cost,
 )
+from .logger import logger
 
 from .postprocessor import validate_openai_response
 

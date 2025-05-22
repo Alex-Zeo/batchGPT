@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional
 import openai
 from aiohttp import ClientError
 
+from .logger import logger
+
 
 class AsyncOpenAIClient:
     """Asynchronous OpenAI client with basic retry, budget and throttling."""
@@ -29,6 +31,9 @@ class AsyncOpenAIClient:
         self._lock = asyncio.Lock()
         self._reset_throttle()
         self.cost_spent = 0.0
+        logger.info(
+            f"Initialized AsyncOpenAIClient model={self.model} budget={self.budget}"
+        )
 
     # simple pricing table per million tokens
     PRICING = {
@@ -41,6 +46,7 @@ class AsyncOpenAIClient:
         self._window_start = time.time()
         self._tokens_used = 0
         self._requests_used = 0
+        logger.debug("Throttle counters reset")
 
     async def _throttle(self, token_count: int) -> None:
         async with self._lock:
@@ -53,6 +59,7 @@ class AsyncOpenAIClient:
                 or self._requests_used + 1 > self.request_limit_per_minute
             ):
                 wait = 60 - (now - self._window_start)
+                logger.debug(f"Throttling for {wait:.2f}s due to rate limits")
                 await asyncio.sleep(max(wait, 0))
                 now = time.time()
                 if now - self._window_start >= 60:
@@ -77,6 +84,7 @@ class AsyncOpenAIClient:
     async def chat_complete(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, Any]:
         token_estimate = sum(len(m.get("content", "").split()) for m in messages)
         if self.budget and self.cost_spent >= self.budget:
+            logger.error("Budget exhausted")
             raise RuntimeError("Budget exhausted")
 
         await self._throttle(token_estimate + kwargs.get("max_tokens", 0))
@@ -84,6 +92,9 @@ class AsyncOpenAIClient:
         attempts = 0
         while True:
             try:
+                logger.debug(
+                    f"Calling chat_complete attempt={attempts} tokens={token_estimate}"
+                )
                 resp = await self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -94,11 +105,13 @@ class AsyncOpenAIClient:
                 return resp.model_dump() if hasattr(resp, "model_dump") else resp
             except (openai.RateLimitError, ClientError) as e:
                 attempts += 1
+                logger.warning(f"Rate limit or network error: {e}; retry {attempts}")
                 if attempts > self.retry_limit:
                     raise
                 await asyncio.sleep(2 ** attempts)
-            except Exception:
+            except Exception as e:
                 attempts += 1
+                logger.error(f"Unexpected error: {e}; retry {attempts}")
                 if attempts > self.retry_limit:
                     raise
                 await asyncio.sleep(2 ** attempts)

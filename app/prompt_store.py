@@ -2,6 +2,8 @@ import os
 import glob
 from typing import List
 
+from .logger import logger
+
 try:
     import boto3
 except ImportError:  # Optional dependency
@@ -9,8 +11,11 @@ except ImportError:  # Optional dependency
 
 
 def _load_file(path: str) -> List[str]:
+    logger.debug(f"Loading prompt file {path}")
     with open(path, "r", encoding="utf-8") as f:
-        return [line.strip() for line in f if line.strip()]
+        lines = [line.strip() for line in f if line.strip()]
+    logger.info(f"Loaded {len(lines)} prompts from {path}")
+    return lines
 
 
 def load_prompt_files(path: str, glob_pattern: str = "*.txt") -> List[str]:
@@ -31,29 +36,40 @@ def load_prompt_files(path: str, glob_pattern: str = "*.txt") -> List[str]:
         A list of prompt strings loaded from the provided source.
     """
     if path.startswith("s3://"):
+        logger.info(f"Loading prompts from S3: {path}")
         if boto3 is None:
             raise ImportError("boto3 is required for S3 support")
         bucket_key = path[5:]
         bucket, _, key = bucket_key.partition("/")
         s3 = boto3.client("s3")
         if key and not key.endswith("/"):
-            obj = s3.get_object(Bucket=bucket, Key=key)
-            data = obj["Body"].read().decode("utf-8")
-            return [line.strip() for line in data.splitlines() if line.strip()]
+            try:
+                obj = s3.get_object(Bucket=bucket, Key=key)
+                data = obj["Body"].read().decode("utf-8")
+                lines = [line.strip() for line in data.splitlines() if line.strip()]
+                logger.info(f"Loaded {len(lines)} prompts from s3://{bucket}/{key}")
+                return lines
+            except Exception as e:
+                logger.error(f"Error loading {path}: {e}")
+                raise
         else:
             prefix = key
             paginator = s3.get_paginator("list_objects_v2")
             prompts: List[str] = []
             for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
                 for item in page.get("Contents", []):
-                    obj = s3.get_object(Bucket=bucket, Key=item["Key"])
-                    data = obj["Body"].read().decode("utf-8")
-                    prompts.extend(
-                        [line.strip() for line in data.splitlines() if line.strip()]
-                    )
+                    try:
+                        obj = s3.get_object(Bucket=bucket, Key=item["Key"])
+                        data = obj["Body"].read().decode("utf-8")
+                        prompts.extend(
+                            [line.strip() for line in data.splitlines() if line.strip()]
+                        )
+                    except Exception as e:
+                        logger.error(f"Error loading s3://{bucket}/{item['Key']}: {e}")
             return prompts
 
     if os.path.isdir(path):
+        logger.info(f"Loading prompts from directory {path}")
         prompts: List[str] = []
         files = glob.glob(os.path.join(path, glob_pattern))
         for file_path in files:
@@ -61,6 +77,7 @@ def load_prompt_files(path: str, glob_pattern: str = "*.txt") -> List[str]:
         return prompts
 
     if os.path.isfile(path):
+        logger.info(f"Loading prompts from file {path}")
         return _load_file(path)
 
     raise FileNotFoundError(f"Prompt source {path} not found")
@@ -113,4 +130,5 @@ def load_default_prompts(
     system_path: Path = SYSTEM_PROMPT_PATH, user_path: Path = USER_PROMPT_PATH
 ) -> Prompts:
     """Return the default WowRunner system and user prompts."""
+    logger.info(f"Loading default prompts from {system_path} and {user_path}")
     return Prompts(system=system_path.read_text(), user=user_path.read_text())

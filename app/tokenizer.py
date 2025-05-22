@@ -1,5 +1,7 @@
 from typing import List
 
+from .logger import logger
+
 try:
     import tiktoken
 except Exception:  # pragma: no cover - optional dependency
@@ -18,14 +20,19 @@ class Tokenizer:
                 self.enc = tiktoken.get_encoding("cl100k_base")
         else:
             self.enc = None
+        logger.debug(f"Tokenizer initialized for model {model}")
 
     def count(self, text: str) -> int:
         if self.enc:
-            return len(self.enc.encode(text))
-        return len(text.split())
+            tokens = len(self.enc.encode(text))
+        else:
+            tokens = len(text.split())
+        logger.debug(f"Counted {tokens} tokens")
+        return tokens
 
     def chunk(self, text: str, max_tokens: int, overlap: int = 0) -> List[str]:
         if self.count(text) <= max_tokens:
+            logger.debug("Text within max_tokens, no chunking needed")
             return [text]
         words = text.split()
         chunks: List[str] = []
@@ -35,4 +42,5 @@ class Tokenizer:
             chunk = " ".join(words[start:end])
             chunks.append(chunk)
             start = end - overlap if overlap else end
+        logger.info(f"Chunked text into {len(chunks)} chunks")
         return chunks
