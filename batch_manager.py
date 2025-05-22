@@ -83,46 +83,41 @@ class BatchManager:
             logger.info(f"Created batch storage directory: {self.storage_dir}")
     
 
-    def add_batch(self, batch_id: str, batch_info: Dict) -> None:
-        """Add a new batch job or update an existing one.
-
-        ``batch_info`` can be either a dictionary or a :class:`BatchJob` instance.
-        """
-        if isinstance(batch_info, dict):
-
     def add_batch(self, batch_id: str, batch_info: Union[Dict, BatchJob]) -> None:
         """Add a new batch job or update an existing one.
 
-        `batch_info` may be a dictionary of batch data or an existing
-        :class:`BatchJob` object.
+        Parameters
+        ----------
+        batch_id : str
+            Identifier for the batch.
+        batch_info : Union[Dict, BatchJob]
+            Data describing the batch or a :class:`BatchJob` instance.
         """
+
         if isinstance(batch_info, BatchJob):
-            # Use the provided BatchJob instance directly
-            batch_job = batch_info
-            # Ensure the ID matches the key used in the manager
-            if batch_job.id != batch_id:
-                batch_job.id = batch_id
+            # Copy attributes from the provided BatchJob instance
+            batch_job = BatchJob(
+                batch_id=batch_id,
+                status=batch_info.status,
+                created_at=batch_info.created_at,
+                model=batch_info.model,
+            )
+            batch_job.results = list(batch_info.results)
+            batch_job.errors = list(batch_info.errors)
+            batch_job.request_count = batch_info.request_count
+            batch_job.last_updated = batch_info.last_updated
+            batch_job.metadata = dict(batch_info.metadata)
         elif isinstance(batch_info, dict):
-
-            # Create BatchJob from dictionary
-            if "id" not in batch_info:
-                batch_info["id"] = batch_id
-            batch_job = BatchJob.from_dict(batch_info)
-        elif isinstance(batch_info, BatchJob):
-            # Use the provided BatchJob instance directly
-            batch_job = batch_info
-            batch_job.id = batch_id
+            info = batch_info.copy()
+            info.setdefault("id", batch_id)
+            batch_job = BatchJob.from_dict(info)
         else:
-
-            # Create new BatchJob from an object with similar attributes
-
-            # Fallback: treat as a simple object with attributes
-
+            # Fallback: treat as a simple object with similar attributes
             batch_job = BatchJob(
                 batch_id=batch_id,
                 status=getattr(batch_info, "status", "unknown"),
                 created_at=getattr(batch_info, "created_at", None),
-                model=getattr(batch_info, "model", None)
+                model=getattr(batch_info, "model", None),
             )
         
         self.batches[batch_id] = batch_job
