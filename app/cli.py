@@ -3,6 +3,7 @@ import asyncio
 from pathlib import Path
 
 from .orchestrator import run_pdf
+from .logger import logger
 
 
 def main() -> None:
@@ -14,6 +15,10 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=None, help="Output store file")
     args = parser.parse_args()
 
+    logger.info(
+        f"CLI called with pdf={args.pdf} model={args.model} budget={args.budget} output={args.output}"
+    )
+
     result = asyncio.run(
         run_pdf(
             args.pdf,
@@ -22,6 +27,7 @@ def main() -> None:
             output=str(args.output) if args.output else None,
         )
     )
+    logger.info("Processing completed")
     print(result)
 
 

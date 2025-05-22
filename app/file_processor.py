@@ -6,8 +6,7 @@ import uuid
 import tempfile
 import zipfile
 from typing import Dict, Optional, Tuple, List, Any
-import logging
-from loguru import logger
+from .logger import logger, setup_logger as _setup_logger
 import concurrent.futures
 import mimetypes
 from pathlib import Path
@@ -18,34 +17,8 @@ import docx
 from datetime import datetime
 
 def setup_logger(log_path: str = "logs"):
-    """Set up enhanced logging with loguru"""
-    # Ensure log directory exists
-    os.makedirs(log_path, exist_ok=True)
-    
-    # Configure loguru
-    logger.remove()  # Remove default handler
-    
-    # Add handlers for different log levels
-    logger.add(
-        os.path.join(log_path, "info.log"), 
-        level="INFO", 
-        rotation="10 MB",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
-    )
-    logger.add(
-        os.path.join(log_path, "error.log"), 
-        level="ERROR", 
-        rotation="10 MB",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {file}:{line} | {message}"
-    )
-    logger.add(
-        os.path.join(log_path, "debug.log"), 
-        level="DEBUG", 
-        rotation="10 MB",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {file}:{line} | {message}"
-    )
-    
-    # Log startup info
+    """Delegate to the package logger configuration."""
+    _setup_logger(log_path)
     logger.info("File processor logger initialized")
     return logger
 

@@ -1,6 +1,5 @@
 # mypy: ignore-errors
 import json
-import logging
 import os
 import uuid
 from typing import List, Dict, Any, Optional, Tuple
@@ -13,11 +12,7 @@ import hashlib
 import csv
 import io
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+from .logger import logger
 
 
 def sanitize_input(input_str: str) -> str:

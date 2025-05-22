@@ -21,15 +21,15 @@ from app.utils import (
     expand_results, format_batch_summary
 )
 from app.file_processor import (
-    process_uploaded_file, process_multiple_files, split_text_into_chunks, 
-    detect_file_type, generate_summary, setup_logger
+    process_uploaded_file, process_multiple_files, split_text_into_chunks,
+    detect_file_type, generate_summary
 )
 from app.batch_manager import batch_manager
 from dotenv import load_dotenv
-from loguru import logger
+from app.logger import logger, setup_logger
 
 # Set up logging
-logger = setup_logger()
+setup_logger()
 
 # Load environment variables
 load_dotenv()

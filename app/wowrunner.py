@@ -8,7 +8,7 @@ from .utils import (
     calculate_cost_estimate,
 )
 from . import prompt_store
-from loguru import logger
+from .logger import logger
 
 
 class WowRunner:
