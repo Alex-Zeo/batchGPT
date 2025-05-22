@@ -21,18 +21,12 @@ logger = logging.getLogger(__name__)
 
 
 def sanitize_input(input_str: str) -> str:
-    """Sanitize user provided text.
-
-    Non-printable characters and angle brackets are removed while all other
-    punctuation is preserved. This helps avoid basic HTML/script injection
-    without stripping useful characters like commas or periods.
-    """
-
     sanitized = "".join(
         ch
         for ch in input_str
         if (ch.isprintable() or ch in "\n\r\t") and ch not in "<>"
     )
+    sanitized = sanitized.replace("<", "").replace(">", "")
     logger.info(f"Input sanitized: {sanitized}")
     return sanitized
 
