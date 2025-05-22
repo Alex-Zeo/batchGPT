@@ -18,10 +18,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 def sanitize_input(input_str: str) -> str:
-    """Remove non-printable characters while preserving punctuation."""
+    """Remove non-printable characters and strip angle brackets."""
     sanitized = "".join(
         ch for ch in input_str if ch.isprintable() or ch in "\n\r\t"
     )
+    sanitized = sanitized.replace("<", "").replace(">", "")
     logger.info(f"Input sanitized: {sanitized}")
     return sanitized
 
