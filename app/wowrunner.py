@@ -2,11 +2,7 @@ import asyncio
 from typing import Optional
 
 from .openai_batch import run_batch, poll_batch_until_complete
-from .utils import (
-    format_batch_summary,
-    format_batch_results,
-    calculate_cost_estimate,
-)
+from utils.formatters import format_batch_summary, format_batch_results, calculate_cost_estimate
 from . import prompt_store
 from .logger import logger
 

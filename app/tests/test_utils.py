@@ -1,5 +1,6 @@
 import os
-from app.utils import sanitize_input, calculate_batch_size, generate_hash
+from utils.validators import sanitize_input, calculate_batch_size
+from utils.parsers import generate_hash
 
 
 def test_sanitize_input():
@@ -28,7 +29,7 @@ if 'pandas' not in sys.modules:
 if 'pytz' not in sys.modules:
     sys.modules['pytz'] = types.SimpleNamespace(timezone=lambda tz: tz)
 
-from app.utils import sanitize_input
+from utils.validators import sanitize_input
 
 class TestUtils(unittest.TestCase):
     def test_sanitize_input_preserves_punctuation(self):
