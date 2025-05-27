@@ -17,8 +17,8 @@ from typing import Any, Dict
 
 import click
 
-from .logger import logger, setup_logger
-from .orchestrator import run_pdf
+from logs.logger import logger, setup_logger
+from app.orchestrator import run_pdf
 
 
 def _load_config(path: Path | None) -> Dict[str, Any]:

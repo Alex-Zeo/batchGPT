@@ -5,7 +5,7 @@ from typing import IO, Any, Dict, List, Union, cast
 
 import pandas as pd
 
-from .logger import logger
+from logs.logger import logger
 
 
 class ExcelReader:

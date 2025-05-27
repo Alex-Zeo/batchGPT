@@ -24,7 +24,7 @@ wheels/
 *.egg
 
 # Project-specific directories
-logs/
+logs/*.log
 app/batches/
 
 # Virtual Environment

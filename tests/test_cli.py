@@ -2,7 +2,7 @@ import json
 
 from click.testing import CliRunner
 
-from app import cli as cli_module
+from interfaces.cli import main as cli_module
 
 
 async def _fake_run_pdf(path: str, model: str = "gpt", budget=None, output=None):
