@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 
 class StorageService:
@@ -22,7 +22,7 @@ class StorageService:
         path = self.base_dir / f"{batch_id}.json"
         if path.exists():
             with path.open() as f:
-                return json.load(f)
+                return cast(Dict[str, Any], json.load(f))
         return None
 
     # Results JSONL

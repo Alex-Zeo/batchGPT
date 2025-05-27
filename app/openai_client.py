@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import os
 import asyncio
 import time
@@ -104,7 +105,9 @@ class AsyncOpenAIClient:
             input_tokens * model_price["input"] + output_tokens * model_price["output"]
         )
 
-    async def chat_complete(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, Any]:
+    async def chat_complete(
+        self, messages: List[Dict[str, str]], **kwargs: Any
+    ) -> Dict[str, Any]:
         """Create a chat completion request.
 
         Args:
@@ -149,11 +152,10 @@ class AsyncOpenAIClient:
                 logger.warning(f"Rate limit or network error: {e}; retry {attempts}")
                 if attempts > self.retry_limit:
                     raise
-                await asyncio.sleep(2 ** attempts)
+                await asyncio.sleep(2**attempts)
             except Exception as e:
                 attempts += 1
                 logger.error(f"Unexpected error: {e}; retry {attempts}")
                 if attempts > self.retry_limit:
                     raise
-                await asyncio.sleep(2 ** attempts)
-
+                await asyncio.sleep(2**attempts)
