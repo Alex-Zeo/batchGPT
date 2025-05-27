@@ -18,6 +18,7 @@ from .utils import (
 from .logger import logger
 
 from .postprocessor import validate_openai_response
+from models import BatchRequest, EvaluationResult
 
 import uuid
 
@@ -331,7 +332,7 @@ async def retrieve_batch_status(batch_id: str) -> Any:
             logger.error(f"Error retrieving batch status: {error_msg}")
             raise
 
-async def retrieve_batch_results(batch_status: Any) -> Tuple[List[Dict], List[Dict]]:
+async def retrieve_batch_results(batch_status: Any) -> Tuple[List[EvaluationResult], List[Dict]]:
     """
     Downloads and processes batch results from completed batch job using direct API requests.
     Returns a tuple of (results, errors).
@@ -342,8 +343,8 @@ async def retrieve_batch_results(batch_status: Any) -> Tuple[List[Dict], List[Di
         logger.warning(f"Batch {batch_status.id} not completed yet. Status: {batch_status.status}")
         return [], []
     
-    results = []
-    errors = []
+    results: List[EvaluationResult] = []
+    errors: List[Dict] = []
     
     try:
         # Prepare request headers
@@ -371,14 +372,25 @@ async def retrieve_batch_results(batch_status: Any) -> Tuple[List[Dict], List[Di
                         for line in output_content.splitlines():
                             if line.strip():
                                 item = json.loads(line)
+                                content = ""
                                 if "choices" in item and item["choices"]:
-                                    content = item["choices"][0].get("message", {}).get("content", "")
-                                    try:
-                                        validated = validate_openai_response(content)
-                                        item["validated"] = validated.dict()
-                                    except Exception as ve:
-                                        item["validation_error"] = str(ve)
-                                results.append(item)
+                                    msg = item["choices"][0].get("message", {})
+                                    content = msg.get("content", "")
+                                try:
+                                    validated = validate_openai_response(content)
+                                    content = validated.summary if hasattr(validated, "summary") else content
+                                except Exception as ve:
+                                    logger.debug(f"Validation failed: {ve}")
+                                results.append(
+                                    EvaluationResult(
+                                        custom_id=item.get("custom_id", ""),
+                                        status=item.get("status", ""),
+                                        created_at=item.get("created_at", ""),
+                                        model=item.get("model", ""),
+                                        content=content,
+                                        usage=item.get("usage", {}),
+                                    )
+                                )
         
         # Get error results if any
         if batch_status.error_file_id:
@@ -416,40 +428,40 @@ async def retrieve_batch_results(batch_status: Any) -> Tuple[List[Dict], List[Di
             raise
 
 async def prepare_batch_requests(
-    inputs: List[str], 
-    model: str, 
+    inputs: List[str],
+    model: str,
     reasoning_effort: str = "medium",
     temperature: float = 0.7,
     max_tokens: int = 1024,
-    response_format: str = "json_object"
-) -> List[Dict]:
-    """
-    Prepare batch requests with the given parameters.
-    """
-    batch_requests = []
+    response_format: str = "json_object",
+) -> List[BatchRequest]:
+    """Prepare batch requests with the given parameters."""
+    batch_requests: List[BatchRequest] = []
     
     for i, inp in enumerate(inputs):
-        request = {
-            "custom_id": str(i),
-            "method": "POST",
-            "url": "/v1/chat/completions",
-            "body": {
-                "model": model,
-                "messages": [{"role": "user", "content": sanitize_input(inp)}],
-                "max_tokens": max_tokens,
-                "temperature": temperature,
-            }
+        request_body = {
+            "model": model,
+            "messages": [{"role": "user", "content": sanitize_input(inp)}],
+            "max_tokens": max_tokens,
+            "temperature": temperature,
         }
         
         # Add reasoning_effort only for o1 models
         if "o1" in model.lower():
-            request["body"]["reasoning_effort"] = reasoning_effort
+            request_body["reasoning_effort"] = reasoning_effort
         
         # Add response_format if json_object is requested
         if response_format == "json_object":
-            request["body"]["response_format"] = {"type": "json_object"}
-        
-        batch_requests.append(request)
+            request_body["response_format"] = {"type": "json_object"}
+
+        batch_requests.append(
+            BatchRequest(
+                custom_id=str(i),
+                method="POST",
+                url="/v1/chat/completions",
+                body=request_body,
+            )
+        )
     
     return batch_requests
 

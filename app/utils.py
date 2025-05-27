@@ -2,7 +2,8 @@
 import json
 import os
 import uuid
-from typing import List, Dict, Any, Optional, Tuple
+from dataclasses import asdict, is_dataclass
+from typing import Any, Dict, List, Optional, Tuple
 import re
 import pandas as pd
 from datetime import datetime, timedelta
@@ -26,13 +27,15 @@ def sanitize_input(input_str: str) -> str:
     return sanitized
 
 
-def write_jsonl(data: List[Dict], file_path: str):
-    """
-    Writes a list of dictionaries to a JSONL file.
-    """
+def write_jsonl(data: List[Any], file_path: str) -> None:
+    """Write a list of objects to a JSONL file."""
     try:
         with open(file_path, "w") as file:
             for item in data:
+                if is_dataclass(item):
+                    item = asdict(item)
+                elif hasattr(item, "dict"):
+                    item = item.dict()
                 file.write(json.dumps(item) + "\n")
         logger.info(f"Wrote {len(data)} items to {file_path}")
     except Exception as e:
@@ -100,13 +103,15 @@ def validate_api_key() -> bool:
     return True
 
 
-def format_batch_results(results: List[Dict]) -> pd.DataFrame:
-    """
-    Format batch results into a pandas DataFrame for easier analysis.
-    """
+def format_batch_results(results: List[Any]) -> pd.DataFrame:
+    """Convert batch results into a dataframe."""
     formatted_data = []
 
     for item in results:
+        if is_dataclass(item):
+            item = asdict(item)
+        elif hasattr(item, "dict"):
+            item = item.dict()
         entry = {
             "custom_id": item.get("custom_id", ""),
             "status": item.get("status", ""),
