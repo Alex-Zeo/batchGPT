@@ -36,6 +36,7 @@ def setup_logger(log_path: str = "logs"):
     logger.info("File processor logger initialized")
     return logger
 
+
 def extract_text_from_pdf(
     file_content, extract_tables: bool = False
 ) -> Tuple[str, Dict[str, Any]]:
@@ -262,6 +263,7 @@ def extract_text_from_code(file_content, extension) -> Tuple[str, Dict[str, Any]
             "error": str(e)
         }
 
+
 def extract_data_from_excel(file_content) -> Tuple[str, Dict[str, Any]]:
     """Extract data from an Excel file using :class:`ExcelReader`."""
 
@@ -274,13 +276,9 @@ def extract_data_from_excel(file_content) -> Tuple[str, Dict[str, Any]]:
             text = df.to_csv(index=False)
         else:
             text = ""
-        metadata = {
-            "rows": len(records),
-            "columns": len(records[0]) if records else 0,
-        }
-        logger.info(
-            f"Successfully extracted {metadata['rows']} rows from Excel file"
-        )
+        metadata = {"rows": len(records), "columns": len(records[0]) if records else 0}
+        logger.info(f"Successfully extracted {metadata['rows']} rows from Excel file")
+
         return text, metadata
     except Exception as e:  # noqa: BLE001
         logger.error(f"Error extracting data from Excel file: {str(e)}")
@@ -290,6 +288,7 @@ def extract_data_from_excel(file_content) -> Tuple[str, Dict[str, Any]]:
 def process_uploaded_file(
     file, file_type: Optional[str] = None, extract_tables: bool = False
 ) -> Tuple[str, str, Dict[str, Any]]:
+
     """Process an uploaded file and extract its text.
 
     Args:
@@ -302,6 +301,10 @@ def process_uploaded_file(
 
     Example:
         >>> text, ftype, meta = process_uploaded_file(file_obj)
+   
+    Process uploaded file and extract text based on file type
+    Returns a tuple of (extracted_text, file_type, metadata)
+
     """
     if file is None:
         logger.warning("No file provided")
@@ -360,12 +363,14 @@ def process_uploaded_file(
 def process_multiple_files(
     files, extract_tables: bool = False, process_mode: str = "separate"
 ) -> List[Dict[str, Any]]:
-    """Process multiple uploaded files in parallel.
+    """
+    Process multiple uploaded files in parallel
 
     Args:
-        files: List of file objects.
-        extract_tables: Whether to parse tables in PDFs/DOCX files.
-        process_mode: ``separate`` (default), ``combine`` or ``zip``.
+        files: List of file objects
+        extract_tables: Whether to extract tables from PDFs and DOCX files
+        process_mode: How to process files - "separate" (each file as separate prompt)
+                      or "combine" (all files combined) or "zip" (handle zip archives)
 
     Returns:
         List[Dict[str, Any]]: Metadata and text for each processed file.
@@ -721,6 +726,7 @@ def split_text_into_chunks(
 
 
 def detect_file_type(filename: str) -> str:
+
     """Guess a file type from its filename.
 
     Args:

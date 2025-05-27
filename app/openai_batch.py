@@ -379,6 +379,7 @@ async def retrieve_batch_status(batch_id: str) -> Any:
             raise
 
 async def retrieve_batch_results(batch_status: Any) -> Tuple[List[EvaluationResult], List[Dict]]:
+
     """Download and parse the results for a completed batch job.
 
     Args:
@@ -392,6 +393,8 @@ async def retrieve_batch_results(batch_status: Any) -> Tuple[List[EvaluationResu
 
     Example:
         >>> results, errors = await retrieve_batch_results(status)
+        Downloads and processes batch results from completed batch job using direct API requests.
+        Returns a tuple of (results, errors).
     """
     refresh_api_key()  # Ensure key is up to date
     
@@ -491,6 +494,7 @@ async def prepare_batch_requests(
     max_tokens: int = 1024,
     response_format: str = "json_object",
 ) -> List[BatchRequest]:
+
     """Create request payloads for a batch run.
 
     Args:
@@ -507,6 +511,8 @@ async def prepare_batch_requests(
     Example:
         >>> reqs = await prepare_batch_requests(["hello"], "gpt-3.5-turbo")
     """
+    """Prepare batch requests with the given parameters."""
+
     batch_requests: List[BatchRequest] = []
     
     for i, inp in enumerate(inputs):
