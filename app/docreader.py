@@ -4,7 +4,7 @@ import io
 from abc import ABC, abstractmethod
 from typing import Dict, Tuple, Any
 
-from .logger import logger
+from logs.logger import logger
 from .file_processor import extract_text_from_pdf, extract_text_from_docx
 
 

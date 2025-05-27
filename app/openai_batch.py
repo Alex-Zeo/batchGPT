@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from utils.validators import sanitize_input, validate_api_key, calculate_batch_size
 from utils.parsers import write_jsonl, read_jsonl
 from utils.formatters import estimate_batch_cost
-from .logger import logger
+from logs.logger import logger
 
 from .postprocessor import validate_openai_response
 from models import BatchRequest, EvaluationResult
