@@ -36,4 +36,4 @@ def setup_logger(log_dir: str = "logs") -> None:
     )
 
 
-__all__ = ["setup_logger", "logger"]
+__all__ = ["logger", "setup_logger"]
