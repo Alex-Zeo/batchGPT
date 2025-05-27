@@ -14,6 +14,6 @@ jobs:
           pip install -r requirements.txt
           pip install pytest mypy
       - name: Run mypy
-        run: mypy --strict app/batch_manager.py app/openai_batch.py app/file_processor.py app/utils.py streamlit/app.py
+        run: mypy --strict app/batch_manager.py app/openai_batch.py app/file_processor.py utils/validators.py utils/formatters.py utils/parsers.py streamlit/app.py
       - name: Run tests
         run: pytest

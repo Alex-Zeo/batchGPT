@@ -2,7 +2,7 @@ import asyncio
 from typing import Optional
 
 from .openai_batch import run_batch, poll_batch_until_complete
-from .utils import (
+from utils import (
     format_batch_summary,
     format_batch_results,
     calculate_cost_estimate,
@@ -29,9 +29,7 @@ class WowRunner:
         self.glob_pattern = glob_pattern
 
     async def run(self) -> None:
-        prompts = prompt_store.load_prompt_files(
-            self.prompt_source, self.glob_pattern
-        )
+        prompts = prompt_store.load_prompt_files(self.prompt_source, self.glob_pattern)
         logger.info(f"Loaded {len(prompts)} prompts from {self.prompt_source}")
         if self.redact:
             logger.info("Redact mode enabled - prompt contents hidden")
@@ -47,7 +45,7 @@ class WowRunner:
             df = format_batch_results(results)
             cost = calculate_cost_estimate(df)
             logger.info(f"Estimated cost: ${cost['total']:.4f}")
-            if self.budget is not None and cost['total'] > self.budget:
+            if self.budget is not None and cost["total"] > self.budget:
                 logger.warning(
                     f"Budget exceeded: {cost['total']:.2f} > {self.budget:.2f}"
                 )

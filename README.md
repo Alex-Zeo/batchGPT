@@ -105,7 +105,7 @@ python cli.py s3://my-bucket/prompts.txt --redact
   - `openai_client.py` - Async OpenAI client with retry and budget control
   - `batch_manager.py` - Batch job tracking and management
   - `file_processor.py` - File processing utilities
-  - `utils.py` - Helper utilities
+  - `utils/` - Helper utilities package
   - `tokenizer.py` - Token counting and chunking
   - `pdfreader/pdf_loader.py` - PDF helpers
   - `prompt_store.py` - Prompt loading utilities
