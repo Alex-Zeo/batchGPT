@@ -83,7 +83,7 @@ Using the Batch API can save you **50% on token costs** for non-time-sensitive t
    ```
 4. Run the application:
    ```bash
-   streamlit run streamlit/app.py
+   streamlit run streamlit/main.py
    ```
 
 ## CLI Examples
@@ -111,7 +111,7 @@ python cli.py s3://my-bucket/prompts.txt --redact
   - `prompt_store.py` - Prompt loading utilities
   - `postprocessor.py` - Combine chunked responses
   - `wowrunner.py` - High level batch runner
-- `streamlit/app.py` - Main Streamlit application
+- `streamlit/main.py` - Main Streamlit application
 - `prompts/wow_r/` - Default prompts
 
 ## WowRunner
