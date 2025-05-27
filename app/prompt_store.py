@@ -1,6 +1,9 @@
 import os
 import glob
-from typing import List
+import json
+from pathlib import Path
+from typing import Dict, List, Any
+from dataclasses import dataclass
 
 from .logger import logger
 
@@ -83,9 +86,6 @@ def load_prompt_files(path: str, glob_pattern: str = "*.txt") -> List[str]:
     raise FileNotFoundError(f"Prompt source {path} not found")
 
 
-import json
-from pathlib import Path
-from typing import Dict, List, Any
 
 
 class PromptStore:
@@ -109,9 +109,6 @@ class PromptStore:
                     records.append(json.loads(line))
         return records
 
-
-from pathlib import Path
-from dataclasses import dataclass
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SYSTEM_PROMPT_PATH = BASE_DIR / "prompts" / "wow_r" / "wowsystem.md"

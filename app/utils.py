@@ -9,8 +9,6 @@ from datetime import datetime, timedelta
 import time
 import pytz
 import hashlib
-import csv
-import io
 
 from .logger import logger
 

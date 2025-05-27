@@ -18,11 +18,30 @@ class Orchestrator:
         tokenizer: Tokenizer,
         store: PromptStore,
     ) -> None:
+        """Initialize the orchestrator.
+
+        Args:
+            client: OpenAI client for sending requests.
+            tokenizer: Tokenizer used for chunking.
+            store: Prompt store to persist conversations.
+        """
         self.client = client
         self.tokenizer = tokenizer
         self.store = store
 
     async def process_pdf(self, path: str, **kwargs) -> str:
+        """Process a PDF file and return the merged LLM output.
+
+        Args:
+            path: Path to the PDF file.
+            **kwargs: Additional arguments for chunking/tokenization.
+
+        Returns:
+            str: Combined LLM response for all chunks.
+
+        Example:
+            >>> await orchestrator.process_pdf("file.pdf")
+        """
         logger.info(f"Starting PDF processing for {path}")
         _text, chunks, digest = chunk_pdf(path, self.tokenizer, **kwargs)
         logger.info(f"PDF {path} split into {len(chunks)} chunks")
@@ -38,6 +57,20 @@ class Orchestrator:
 
 
 async def run_pdf(path: str, model: str = "gpt-3.5-turbo", budget: float = None, output: str = None) -> str:
+    """Convenience wrapper to process a PDF with minimal setup.
+
+    Args:
+        path: Path to the PDF file.
+        model: Model name to use for the client.
+        budget: Optional spend limit in USD.
+        output: Path of the prompt store file.
+
+    Returns:
+        str: Combined LLM response from :meth:`Orchestrator.process_pdf`.
+
+    Example:
+        >>> await run_pdf("doc.pdf", model="gpt-4")
+    """
     logger.info(f"run_pdf called with path={path} model={model} budget={budget}")
     tokenizer = Tokenizer(model)
     client = AsyncOpenAIClient(model=model, budget=budget)
