@@ -27,8 +27,16 @@ BATCHES_DIR = os.path.join(os.path.dirname(__file__), "batches")
 load_dotenv()
 
 # Function to ensure API key is up to date
-def refresh_api_key():
-    """Refresh the OpenAI API key from environment variables"""
+def refresh_api_key() -> bool:
+    """Refresh the OpenAI API key from the environment.
+
+    Returns:
+        bool: ``True`` if the key was loaded, otherwise ``False``.
+
+    Example:
+        >>> refresh_api_key()
+        True
+    """
     api_key = os.getenv("OPENAI_API_KEY")
     if api_key:
         openai.api_key = api_key
@@ -39,9 +47,16 @@ def refresh_api_key():
 refresh_api_key()
 
 async def list_available_models() -> List[str]:
-    """
-    List models available for the current API key using direct API requests.
-    Returns a list of model IDs.
+    """Return models available for the configured API key.
+
+    Returns:
+        List[str]: List of model identifiers.
+
+    Raises:
+        aiohttp.ClientError: If a network error occurs.
+
+    Example:
+        >>> models = await list_available_models()
     """
     refresh_api_key()  # Ensure key is up to date
     
@@ -98,10 +113,13 @@ async def list_available_models() -> List[str]:
         return fallback_models
 
 async def list_batch_compatible_models() -> List[str]:
-    """
-    List models that are specifically compatible with the batch API.
-    This queries the batch API to determine which models actually work.
-    Returns a list of model IDs that are confirmed compatible.
+    """Return models that support the OpenAI batch API.
+
+    Returns:
+        List[str]: IDs of models confirmed to work with batch processing.
+
+    Example:
+        >>> models = await list_batch_compatible_models()
     """
     refresh_api_key()  # Ensure key is up to date
     
@@ -184,9 +202,20 @@ async def list_batch_compatible_models() -> List[str]:
         return fallback_models
 
 async def upload_batch_file(file_path: str) -> str:
-    """
-    Uploads a batch file to OpenAI's batch endpoint.
-    Returns the file ID.
+    """Upload a batch request file and return the resulting file ID.
+
+    Args:
+        file_path: Path to the JSONL file to upload.
+
+    Returns:
+        str: Identifier of the uploaded file.
+
+    Raises:
+        ValueError: If the API key is invalid or authentication fails.
+        Exception: For other errors returned by the API.
+
+    Example:
+        >>> file_id = await upload_batch_file("requests.jsonl")
     """
     refresh_api_key()  # Ensure key is up to date
     
@@ -214,9 +243,21 @@ async def upload_batch_file(file_path: str) -> str:
             raise
 
 async def create_batch_job(input_file_id: str, model: str, reasoning_effort: str) -> Any:
-    """
-    Creates a batch job with the specified parameters using direct API requests.
-    Returns the batch job object.
+    """Create a batch job for a previously uploaded file.
+
+    Args:
+        input_file_id: File ID returned from :func:`upload_batch_file`.
+        model: Model name to use for the batch.
+        reasoning_effort: Value for the ``reasoning_effort`` metadata field.
+
+    Returns:
+        An object describing the created batch job.
+
+    Raises:
+        ValueError: If authentication fails or the API returns an error.
+
+    Example:
+        >>> job = await create_batch_job(file_id, "gpt-4", "high")
     """
     refresh_api_key()  # Ensure key is up to date
     
@@ -280,9 +321,19 @@ async def create_batch_job(input_file_id: str, model: str, reasoning_effort: str
             raise
 
 async def retrieve_batch_status(batch_id: str) -> Any:
-    """
-    Retrieves batch job status using direct API requests.
-    Returns the batch job object.
+    """Retrieve the status of an existing batch job.
+
+    Args:
+        batch_id: Identifier of the batch to query.
+
+    Returns:
+        An object describing the batch status.
+
+    Raises:
+        ValueError: On authentication or network errors.
+
+    Example:
+        >>> status = await retrieve_batch_status("batch_123")
     """
     refresh_api_key()  # Ensure key is up to date
     
@@ -332,9 +383,19 @@ async def retrieve_batch_status(batch_id: str) -> Any:
             raise
 
 async def retrieve_batch_results(batch_status: Any) -> Tuple[List[Dict], List[Dict]]:
-    """
-    Downloads and processes batch results from completed batch job using direct API requests.
-    Returns a tuple of (results, errors).
+    """Download and parse the results for a completed batch job.
+
+    Args:
+        batch_status: Status object returned from :func:`retrieve_batch_status`.
+
+    Returns:
+        Tuple[List[Dict], List[Dict]]: The successful results and any error entries.
+
+    Raises:
+        ValueError: If network or authentication errors occur.
+
+    Example:
+        >>> results, errors = await retrieve_batch_results(status)
     """
     refresh_api_key()  # Ensure key is up to date
     
@@ -416,15 +477,28 @@ async def retrieve_batch_results(batch_status: Any) -> Tuple[List[Dict], List[Di
             raise
 
 async def prepare_batch_requests(
-    inputs: List[str], 
-    model: str, 
+    inputs: List[str],
+    model: str,
     reasoning_effort: str = "medium",
     temperature: float = 0.7,
     max_tokens: int = 1024,
     response_format: str = "json_object"
 ) -> List[Dict]:
-    """
-    Prepare batch requests with the given parameters.
+    """Create request payloads for a batch run.
+
+    Args:
+        inputs: Raw text prompts to submit.
+        model: Model name for completion.
+        reasoning_effort: Reasoning effort for ``o1`` models.
+        temperature: Sampling temperature.
+        max_tokens: Maximum tokens to generate.
+        response_format: ``json_object`` to request JSON output.
+
+    Returns:
+        List[Dict]: Request dictionaries suitable for the batch API.
+
+    Example:
+        >>> reqs = await prepare_batch_requests(["hello"], "gpt-3.5-turbo")
     """
     batch_requests = []
     
@@ -463,11 +537,26 @@ async def run_batch(
     max_batch_size: int = 5000,
     budget: float = None
 ) -> Any:
-    """
-    Complete batch lifecycle with dynamic batch sizing.
-    If ``budget`` is provided, the run will abort if the predicted cost exceeds
-    that value.  Returns the batch job or a list of batch jobs if multiple
-    batches were created.
+    """Execute a batch run, splitting requests if needed.
+
+    Args:
+        inputs: Prompts to process.
+        model: Target model name.
+        reasoning_effort: Reasoning effort metadata for ``o1`` models.
+        temperature: Sampling temperature.
+        max_tokens: Maximum tokens for each completion.
+        response_format: Desired response format.
+        max_batch_size: Maximum requests per batch file.
+        budget: Optional maximum estimated cost in USD.
+
+    Returns:
+        The created batch job or a list of jobs when multiple batches are used.
+
+    Raises:
+        ValueError: If validation fails or estimated cost exceeds ``budget``.
+
+    Example:
+        >>> job = await run_batch(["hello"], "gpt-3.5-turbo")
     """
     # Check API key validity before starting
     if not validate_api_key():
@@ -544,15 +633,31 @@ async def run_batch(
         )
 
 async def run_single_batch(
-    inputs: List[str], 
-    model: str, 
+    inputs: List[str],
+    model: str,
     reasoning_effort: str = "medium",
     temperature: float = 0.7,
     max_tokens: int = 1024,
     response_format: str = "json_object"
 ) -> Any:
-    """
-    Run a single batch with the given parameters.
+    """Run a single batch with the given parameters.
+
+    Args:
+        inputs: Prompts to process.
+        model: Model name to use.
+        reasoning_effort: Reasoning effort value for ``o1`` models.
+        temperature: Sampling temperature.
+        max_tokens: Maximum number of tokens to generate.
+        response_format: Desired response format.
+
+    Returns:
+        An object describing the created batch job.
+
+    Raises:
+        ValueError: If the API returns an error or authentication fails.
+
+    Example:
+        >>> job = await run_single_batch(["hi"], "gpt-4")
     """
     refresh_api_key()  # Ensure key is up to date
     
@@ -618,20 +723,24 @@ async def run_single_batch(
         raise
 
 async def poll_batch_until_complete(
-    batch_id: str, 
+    batch_id: str,
     poll_interval: int = 60,
     timeout_minutes: int = 1440,  # 24 hours max
     on_status_change: callable = None
 ) -> Tuple[Any, List[Dict], List[Dict]]:
-    """
-    Poll a batch job until it completes or times out.
-    Returns a tuple of (final_status, results, errors).
-    
+    """Poll a batch job until completion.
+
     Args:
-        batch_id: The batch ID to poll
-        poll_interval: Time in seconds between status checks
-        timeout_minutes: Maximum time in minutes to poll before timing out
-        on_status_change: Optional callback function called when status changes with (batch_id, status) parameters
+        batch_id: The batch identifier.
+        poll_interval: Seconds between status checks.
+        timeout_minutes: Abort after this many minutes.
+        on_status_change: Optional callback invoked when the status changes.
+
+    Returns:
+        Tuple containing the final status object, results list and errors list.
+
+    Example:
+        >>> status, results, errors = await poll_batch_until_complete(batch_id)
     """
     refresh_api_key()  # Ensure key is up to date
     

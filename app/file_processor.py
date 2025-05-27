@@ -17,15 +17,33 @@ import docx
 from datetime import datetime
 
 def setup_logger(log_path: str = "logs"):
-    """Delegate to the package logger configuration."""
+    """Configure the module level logger.
+
+    Args:
+        log_path: Directory where log files should be written.
+
+    Returns:
+        logging.Logger: The configured logger instance.
+
+    Example:
+        >>> logger = setup_logger()
+    """
     _setup_logger(log_path)
     logger.info("File processor logger initialized")
     return logger
 
 def extract_text_from_pdf(file_content, extract_tables: bool = False) -> Tuple[str, Dict[str, Any]]:
-    """
-    Extract text from PDF file
-    Returns a tuple of (extracted_text, metadata)
+    """Extract textual content from a PDF file.
+
+    Args:
+        file_content: Bytes-like object containing the PDF data.
+        extract_tables: Whether to extract table text as well.
+
+    Returns:
+        Tuple[str, Dict[str, Any]]: The extracted text and metadata about the file.
+
+    Example:
+        >>> text, meta = extract_text_from_pdf(file_bytes)
     """
     logger.info("Extracting text from PDF")
     text = ""
@@ -76,9 +94,16 @@ def extract_text_from_pdf(file_content, extract_tables: bool = False) -> Tuple[s
         return f"Error extracting text from PDF: {str(e)}", {"error": str(e)}
 
 def extract_text_from_docx(file_content) -> Tuple[str, Dict[str, Any]]:
-    """
-    Extract text from DOCX file
-    Returns a tuple of (extracted_text, metadata)
+    """Extract text from a DOCX document.
+
+    Args:
+        file_content: Bytes-like object containing the DOCX data.
+
+    Returns:
+        Tuple[str, Dict[str, Any]]: The extracted text and document metadata.
+
+    Example:
+        >>> text, meta = extract_text_from_docx(doc_bytes)
     """
     logger.info("Extracting text from DOCX")
     text = ""
@@ -127,9 +152,16 @@ def extract_text_from_docx(file_content) -> Tuple[str, Dict[str, Any]]:
         return f"Error extracting text from DOCX: {str(e)}", {"error": str(e)}
 
 def extract_text_from_txt(file_content) -> Tuple[str, Dict[str, Any]]:
-    """
-    Extract text from plain text file
-    Returns a tuple of (extracted_text, metadata)
+    """Extract text from a plain text file.
+
+    Args:
+        file_content: Bytes-like object containing the text file.
+
+    Returns:
+        Tuple[str, Dict[str, Any]]: The extracted text and metadata such as line count.
+
+    Example:
+        >>> text, meta = extract_text_from_txt(txt_bytes)
     """
     logger.info("Extracting text from TXT")
     try:
@@ -148,9 +180,16 @@ def extract_text_from_txt(file_content) -> Tuple[str, Dict[str, Any]]:
         return f"Error extracting text from TXT: {str(e)}", {"error": str(e)}
 
 def extract_text_from_py(file_content) -> Tuple[str, Dict[str, Any]]:
-    """
-    Extract text from Python file (preserving formatting)
-    Returns a tuple of (extracted_text, metadata)
+    """Extract source code from a Python file.
+
+    Args:
+        file_content: Bytes-like object of the ``.py`` file.
+
+    Returns:
+        Tuple[str, Dict[str, Any]]: The source code and basic statistics.
+
+    Example:
+        >>> text, meta = extract_text_from_py(py_bytes)
     """
     logger.info("Extracting text from Python file")
     try:
@@ -175,9 +214,17 @@ def extract_text_from_py(file_content) -> Tuple[str, Dict[str, Any]]:
         return f"Error extracting text from Python file: {str(e)}", {"error": str(e)}
 
 def extract_text_from_code(file_content, extension) -> Tuple[str, Dict[str, Any]]:
-    """
-    Extract text from generic code file
-    Returns a tuple of (extracted_text, metadata)
+    """Extract text from a generic source code file.
+
+    Args:
+        file_content: Bytes-like object of the code file.
+        extension: File extension (e.g. ``js`` or ``html``).
+
+    Returns:
+        Tuple[str, Dict[str, Any]]: The source text and metadata about the file.
+
+    Example:
+        >>> text, meta = extract_text_from_code(code_bytes, "js")
     """
     logger.info(f"Extracting text from {extension.upper()} file")
     try:
@@ -197,9 +244,18 @@ def extract_text_from_code(file_content, extension) -> Tuple[str, Dict[str, Any]
         return f"Error extracting text from {extension.upper()} file: {str(e)}", {"error": str(e)}
 
 def process_uploaded_file(file, file_type: Optional[str] = None, extract_tables: bool = False) -> Tuple[str, str, Dict[str, Any]]:
-    """
-    Process uploaded file and extract text based on file type
-    Returns a tuple of (extracted_text, file_type, metadata)
+    """Process an uploaded file and extract its text.
+
+    Args:
+        file: File-like object from the upload widget.
+        file_type: Optional pre-detected type (e.g. ``pdf``).
+        extract_tables: Whether to extract tables from PDF/DOCX files.
+
+    Returns:
+        Tuple[str, str, Dict[str, Any]]: Extracted text, detected file type and metadata.
+
+    Example:
+        >>> text, ftype, meta = process_uploaded_file(file_obj)
     """
     if file is None:
         logger.warning("No file provided")
@@ -249,19 +305,20 @@ def process_uploaded_file(file, file_type: Optional[str] = None, extract_tables:
     
     return text, file_type, metadata
 
-def process_multiple_files(files, extract_tables: bool = False, 
+def process_multiple_files(files, extract_tables: bool = False,
                         process_mode: str = "separate") -> List[Dict[str, Any]]:
-    """
-    Process multiple uploaded files in parallel
-    
+    """Process multiple uploaded files in parallel.
+
     Args:
-        files: List of file objects
-        extract_tables: Whether to extract tables from PDFs and DOCX files
-        process_mode: How to process files - "separate" (each file as separate prompt) 
-                      or "combine" (all files combined) or "zip" (handle zip archives)
-    
+        files: List of file objects.
+        extract_tables: Whether to parse tables in PDFs/DOCX files.
+        process_mode: ``separate`` (default), ``combine`` or ``zip``.
+
     Returns:
-        List of dictionaries with processed file information
+        List[Dict[str, Any]]: Metadata and text for each processed file.
+
+    Example:
+        >>> results = process_multiple_files(uploaded_files)
     """
     logger.info(f"Processing {len(files)} files with mode: {process_mode}")
     results = []
@@ -339,9 +396,16 @@ def process_multiple_files(files, extract_tables: bool = False,
     return results
 
 def process_zip_file(zip_file) -> List[Dict[str, Any]]:
-    """
-    Extract and process files from a zip archive
-    Returns a list of processed file results
+    """Extract and process files contained in a ZIP archive.
+
+    Args:
+        zip_file: File-like object representing the uploaded ZIP file.
+
+    Returns:
+        List[Dict[str, Any]]: Results for each extracted file.
+
+    Example:
+        >>> results = process_zip_file(zip_upload)
     """
     logger.info(f"Processing ZIP file: {zip_file.name}")
     results = []
@@ -458,11 +522,20 @@ def process_zip_file(zip_file) -> List[Dict[str, Any]]:
     
     return results
 
-def split_text_into_chunks(text: str, max_chunk_size: int = 4000, 
+def split_text_into_chunks(text: str, max_chunk_size: int = 4000,
                          overlap: int = 200) -> List[str]:
-    """
-    Split text into chunks for processing with a specified overlap.
-    Tries to split on paragraph boundaries when possible.
+    """Split text into overlapping chunks.
+
+    Args:
+        text: The text to chunk.
+        max_chunk_size: Maximum length of each chunk.
+        overlap: Number of overlapping characters between chunks.
+
+    Returns:
+        List[str]: List of text chunks.
+
+    Example:
+        >>> parts = split_text_into_chunks(long_text)
     """
     logger.info(f"Splitting text into chunks (max size: {max_chunk_size}, overlap: {overlap})")
     
@@ -539,7 +612,18 @@ def split_text_into_chunks(text: str, max_chunk_size: int = 4000,
     return chunks
 
 def detect_file_type(filename: str) -> str:
-    """Detect file type from filename"""
+    """Guess a file type from its filename.
+
+    Args:
+        filename: Name of the file.
+
+    Returns:
+        str: Detected file type such as ``pdf`` or ``txt``.
+
+    Example:
+        >>> detect_file_type("document.pdf")
+        'pdf'
+    """
     extension = filename.lower().split('.')[-1] if '.' in filename else ''
     
     if extension == 'pdf':
@@ -556,7 +640,17 @@ def detect_file_type(filename: str) -> str:
         return 'txt'
 
 def generate_summary(processed_files: List[Dict]) -> str:
-    """Generate a summary of processed files"""
+    """Create a human readable summary of processed files.
+
+    Args:
+        processed_files: Output from :func:`process_multiple_files`.
+
+    Returns:
+        str: Summary text.
+
+    Example:
+        >>> summary = generate_summary(results)
+    """
     if not processed_files:
         return "No files processed."
     
