@@ -24,8 +24,7 @@ wheels/
 *.egg
 
 # Project-specific directories
-logs/
-app/batches/
+# Allow log files in version control
 
 # Virtual Environment
 venv/
