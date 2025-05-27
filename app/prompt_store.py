@@ -2,7 +2,7 @@ import os
 import glob
 from typing import List
 
-from .logger import logger
+from logs.logger import logger
 
 try:
     import boto3

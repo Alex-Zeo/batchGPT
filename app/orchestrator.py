@@ -6,7 +6,7 @@ from .tokenizer import Tokenizer
 from .docreader import DocReader, PDFDocReader
 from .prompt_store import PromptStore
 from .postprocessor import merge_chunks
-from .logger import logger
+from logs.logger import logger
 
 
 class Orchestrator:

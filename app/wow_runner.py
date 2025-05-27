@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 
 import openai
 
-from .logger import logger
+from logs.logger import logger
 
 
 class WowRunner:

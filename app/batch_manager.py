@@ -5,7 +5,7 @@ import time
 from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 import glob
-from .logger import logger
+from logs.logger import logger
 
 class BatchJob:
     """Class representing a batch job with status and results"""
