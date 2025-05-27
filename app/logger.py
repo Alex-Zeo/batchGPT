@@ -36,5 +36,3 @@ def setup_logger(log_dir: str = "logs") -> None:
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
         filter=lambda record: record["level"].name == "ERROR",
     )
-
-__all__ = ["logger", "setup_logger"]
