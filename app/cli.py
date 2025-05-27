@@ -17,7 +17,7 @@ from typing import Any, Dict
 
 import click
 
-from .logger import logger, setup_logger
+from logs.logger import logger, setup_logger
 from .orchestrator import run_pdf
 
 

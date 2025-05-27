@@ -5,7 +5,7 @@ import os
 import re
 from typing import Optional
 
-from app.logger import logger
+from logs.logger import logger
 
 
 def sanitize_input(input_str: str) -> str:

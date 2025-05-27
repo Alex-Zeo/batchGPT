@@ -12,7 +12,7 @@ import pandas as pd
 import pytz  # type: ignore[import-untyped]
 import re
 
-from app.logger import logger
+from logs.logger import logger
 
 
 def format_batch_results(results: List[Any]) -> pd.DataFrame:
