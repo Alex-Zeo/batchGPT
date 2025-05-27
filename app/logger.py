@@ -1,6 +1,8 @@
 from pathlib import Path
 from loguru import logger
 
+__all__ = ["logger", "setup_logger"]
+
 
 def setup_logger(log_dir: str = "logs") -> None:
     """Configure loguru to write logs to rotating files in ``log_dir``."""
@@ -33,5 +35,5 @@ def setup_logger(log_dir: str = "logs") -> None:
         rotation="10 MB",
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
         filter=lambda record: record["level"].name == "ERROR",
-    )
 
+    )

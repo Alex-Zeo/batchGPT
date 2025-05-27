@@ -86,7 +86,7 @@ This directory contains the main business logic and processing components:
 Application entry points for different user interaction modes:
 
 - **`cli/`**: Command-line interface implementation with Click framework, providing programmatic access and automation capabilities
-- **`streamlit/`**: Web-based user interface with chat functionality, configuration panels, and real-time batch monitoring
+- **`streamlit/main.py`**: Streamlit application entry point providing the web UI with chat functionality, configuration panels, and real-time batch monitoring
 
 ### Logging Infrastructure (`logs/`)
 Centralized logging system with structured output:

@@ -10,7 +10,20 @@ from .logger import logger
 
 
 class AsyncOpenAIClient:
-    """Asynchronous OpenAI client with basic retry, budget and throttling."""
+    """Asynchronous OpenAI client with basic retry and throttling.
+
+    Args:
+        api_key: API key to use. If ``None`` the ``OPENAI_API_KEY`` environment
+            variable will be read.
+        model: Model name for all completions.
+        max_tokens_per_minute: Throttle limit for token usage.
+        request_limit_per_minute: Throttle limit for number of requests.
+        budget: Optional spending cap in USD.
+        retry_limit: Maximum retries for transient failures.
+
+    Example:
+        >>> client = AsyncOpenAIClient(model="gpt-4")
+    """
 
     def __init__(
         self,
@@ -21,6 +34,16 @@ class AsyncOpenAIClient:
         budget: Optional[float] = None,
         retry_limit: int = 3,
     ) -> None:
+        """Initialize the client.
+
+        Args:
+            api_key: API key for authentication. Defaults to ``OPENAI_API_KEY``.
+            model: Target model name.
+            max_tokens_per_minute: Rate limit for token usage.
+            request_limit_per_minute: Maximum requests per minute.
+            budget: Optional budget cap in USD.
+            retry_limit: Number of retry attempts for API calls.
+        """
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.client = openai.AsyncOpenAI(api_key=self.api_key)
         self.model = model
@@ -82,6 +105,24 @@ class AsyncOpenAIClient:
         )
 
     async def chat_complete(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, Any]:
+        """Create a chat completion request.
+
+        Args:
+            messages: List of chat messages following the OpenAI schema.
+            **kwargs: Additional parameters forwarded to the OpenAI SDK.
+
+        Returns:
+            The response dictionary returned by the OpenAI SDK.
+
+        Raises:
+            RuntimeError: If the configured budget has been exhausted.
+            openai.RateLimitError: When the API rejects the request due to rate limits.
+            aiohttp.ClientError: On network related failures.
+
+        Example:
+            >>> await client.chat_complete([{"role": "user", "content": "Hi"}])
+        """
+
         token_estimate = sum(len(m.get("content", "").split()) for m in messages)
         if self.budget and self.cost_spent >= self.budget:
             logger.error("Budget exhausted")

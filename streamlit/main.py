@@ -14,12 +14,16 @@ from app.openai_batch import (
     run_batch, retrieve_batch_status, retrieve_batch_results, 
     list_available_models, list_batch_compatible_models, poll_batch_until_complete, refresh_api_key
 )
-from app.utils import (
-    is_valid_poll_interval, format_time_elapsed, 
-    format_batch_results, calculate_cost_estimate, validate_api_key,
-    generate_unique_id, format_timestamp, deduplicate_prompts, 
-    expand_results, format_batch_summary
+from utils.validators import is_valid_poll_interval, validate_api_key
+from utils.formatters import (
+    format_time_elapsed,
+    format_batch_results,
+    calculate_cost_estimate,
+    generate_unique_id,
+    format_timestamp,
+    format_batch_summary,
 )
+from utils.parsers import deduplicate_prompts, expand_results
 from app.file_processor import (
     process_uploaded_file, process_multiple_files, split_text_into_chunks,
     detect_file_type, generate_summary
