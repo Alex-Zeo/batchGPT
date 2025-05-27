@@ -35,3 +35,6 @@ def setup_logger(log_dir: str = "logs") -> None:
         filter=lambda record: record["level"].name == "ERROR",
     )
 
+
+# Explicitly export setup_logger and logger for mypy
+__all__ = ["setup_logger", "logger"]
