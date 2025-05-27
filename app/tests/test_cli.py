@@ -2,7 +2,7 @@ import json
 
 from click.testing import CliRunner
 
-from app import cli as cli_module
+from interfaces.cli import main as cli_module
 
 
 async def _fake_run_pdf(path: str, model: str = "gpt", budget=None, output=None):
@@ -22,7 +22,9 @@ def test_process_pdf_cli_json(tmp_path, monkeypatch):
     monkeypatch.setattr(cli_module, "run_pdf", _fake_run_pdf)
 
     runner = CliRunner()
-    result = runner.invoke(cli_module.cli, ["--quiet", "process-pdf", str(pdf), "--output-format", "json"])
+    result = runner.invoke(
+        cli_module.cli, ["--quiet", "process-pdf", str(pdf), "--output-format", "json"]
+    )
 
     assert result.exit_code == 0
     assert json.loads(result.output) == {"result": "done"}
@@ -38,7 +40,9 @@ def test_process_pdf_with_config(tmp_path, monkeypatch):
     monkeypatch.setattr(cli_module, "run_pdf", _fake_run_pdf)
 
     runner = CliRunner()
-    result = runner.invoke(cli_module.cli, ["--config", str(cfg), "--quiet", "process-pdf", str(pdf)])
+    result = runner.invoke(
+        cli_module.cli, ["--config", str(cfg), "--quiet", "process-pdf", str(pdf)]
+    )
 
     assert result.exit_code == 0
     assert _fake_run_pdf.called["model"] == "cfg-model"
