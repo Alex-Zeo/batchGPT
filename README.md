@@ -44,6 +44,10 @@ A streamlined interface for OpenAI's batch processing API. This tool allows you 
 - **Track costs and performance** metrics
 - **Beautiful Streamlit UI** for easy interaction
 - **WowRunner PDF wrapper** with async CLI for chunked chat completions
+- **Pluggable repository layer** for storing batch metadata
+- **Factory utilities** for creating LLM provider clients
+- **Observer callbacks** for real-time status updates
+- **Dependency injection** via constructor parameters for easier testing
 
 ## Cost Savings with Batch API
 
@@ -111,6 +115,8 @@ python cli.py s3://my-bucket/prompts.txt --redact
   - `prompt_store.py` - Prompt loading utilities
   - `postprocessor.py` - Combine chunked responses
   - `wowrunner.py` - High level batch runner
+- `repositories/` - Repository implementations for persistence
+- `factories/` - Client factory utilities
 - `streamlit/main.py` - Main Streamlit application
 - `prompts/wow_r/` - Default prompts
 
