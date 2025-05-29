@@ -6,8 +6,8 @@ from typing import List, Tuple
 
 import pdfplumber
 
-from ..tokenizer import Tokenizer
-from ..logger import logger
+from .tokenizer import Tokenizer
+from .logger import logger
 
 
 def load_pdf(path: str) -> Tuple[str, str]:

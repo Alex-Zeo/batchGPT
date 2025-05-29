@@ -107,7 +107,7 @@ python cli.py s3://my-bucket/prompts.txt --redact
   - `file_processor.py` - File processing utilities
   - `utils.py` - Helper utilities
   - `tokenizer.py` - Token counting and chunking
-  - `pdfreader/pdf_loader.py` - PDF helpers
+  - `pdfreader.py` - PDF helpers
   - `prompt_store.py` - Prompt loading utilities
   - `postprocessor.py` - Combine chunked responses
   - `wowrunner.py` - High level batch runner
