@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 import openai
 from aiohttp import ClientError
 
-from .logger import logger
+from logs.logger import logger
 
 
 class AsyncOpenAIClient:

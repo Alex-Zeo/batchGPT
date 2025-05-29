@@ -1,4 +1,4 @@
-from .logger import setup_logger, logger
+from logs.logger import setup_logger, logger
 
 # Initialize logging when the package is imported
 setup_logger()

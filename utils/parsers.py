@@ -6,7 +6,7 @@ import json
 from dataclasses import asdict, is_dataclass
 from typing import Any, Dict, List, Tuple
 
-from app.logger import logger
+from logs.logger import logger
 
 
 def write_jsonl(data: List[Any], file_path: str) -> None:
