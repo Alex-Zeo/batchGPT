@@ -1,6 +1,6 @@
-import os
 import glob
 from typing import List
+from pathlib import Path
 
 from .logger import logger
 
@@ -68,23 +68,24 @@ def load_prompt_files(path: str, glob_pattern: str = "*.txt") -> List[str]:
                         logger.error(f"Error loading s3://{bucket}/{item['Key']}: {e}")
             return prompts
 
-    if os.path.isdir(path):
-        logger.info(f"Loading prompts from directory {path}")
+    path_obj = Path(path)
+
+    if path_obj.is_dir():
+        logger.info(f"Loading prompts from directory {path_obj}")
         prompts: List[str] = []
-        files = glob.glob(os.path.join(path, glob_pattern))
+        files = path_obj.glob(glob_pattern)
         for file_path in files:
-            prompts.extend(_load_file(file_path))
+            prompts.extend(_load_file(str(file_path)))
         return prompts
 
-    if os.path.isfile(path):
-        logger.info(f"Loading prompts from file {path}")
-        return _load_file(path)
+    if path_obj.is_file():
+        logger.info(f"Loading prompts from file {path_obj}")
+        return _load_file(str(path_obj))
 
     raise FileNotFoundError(f"Prompt source {path} not found")
 
 
 import json
-from pathlib import Path
 from typing import Dict, List, Any
 
 
@@ -110,7 +111,6 @@ class PromptStore:
         return records
 
 
-from pathlib import Path
 from dataclasses import dataclass
 
 BASE_DIR = Path(__file__).resolve().parent.parent

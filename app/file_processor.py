@@ -5,6 +5,7 @@ import io
 import uuid
 import tempfile
 import zipfile
+from pathlib import Path
 from typing import Dict, Optional, Tuple, List, Any
 from .logger import logger, setup_logger as _setup_logger
 import concurrent.futures
@@ -288,7 +289,6 @@ def extract_data_from_excel(file_content) -> Tuple[str, Dict[str, Any]]:
 def process_uploaded_file(
     file, file_type: Optional[str] = None, extract_tables: bool = False
 ) -> Tuple[str, str, Dict[str, Any]]:
-
     """Process an uploaded file and extract its text.
 
     Args:
@@ -301,7 +301,7 @@ def process_uploaded_file(
 
     Example:
         >>> text, ftype, meta = process_uploaded_file(file_obj)
-   
+
     Process uploaded file and extract text based on file type
     Returns a tuple of (extracted_text, file_type, metadata)
 
@@ -332,11 +332,11 @@ def process_uploaded_file(
         ):
             file_type = "code"
             # Store the actual extension for specific processing
-            extension = os.path.splitext(file_name)[1][1:]
+            extension = Path(file_name).suffix[1:]
         else:
             # Default to text for unknown types, but track the actual extension
             file_type = "txt"
-            extension = os.path.splitext(file_name)[1][1:] if "." in file_name else ""
+            extension = Path(file_name).suffix[1:] if "." in file_name else ""
 
     # Extract text based on file type
     metadata = {}
@@ -359,6 +359,7 @@ def process_uploaded_file(
     metadata["processed_at"] = datetime.now().isoformat()
 
     return text, file_type, metadata
+
 
 def process_multiple_files(
     files, extract_tables: bool = False, process_mode: str = "separate"
@@ -487,9 +488,10 @@ def process_zip_file(zip_file) -> List[Dict[str, Any]]:
     try:
         # Create a temporary directory to extract files
         with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
             # Save the zip file locally
-            zip_path = os.path.join(temp_dir, "archive.zip")
-            with open(zip_path, "wb") as f:
+            zip_path = temp_path / "archive.zip"
+            with zip_path.open("wb") as f:
                 f.write(zip_file.getvalue())
 
             # Extract all files
@@ -504,12 +506,12 @@ def process_zip_file(zip_file) -> List[Dict[str, Any]]:
                     if filename == "archive.zip":
                         continue
 
-                    file_path = os.path.join(root, filename)
+                    file_path = Path(root) / filename
                     # Get relative path for cleaner display
-                    rel_path = os.path.relpath(file_path, temp_dir)
+                    rel_path = Path(file_path).relative_to(temp_path)
 
                     # Skip files that are too large or binary
-                    file_size = os.path.getsize(file_path)
+                    file_size = Path(file_path).stat().st_size
                     if file_size > 10 * 1024 * 1024:  # Skip files larger than 10MB
                         logger.warning(
                             f"Skipping large file in ZIP: {rel_path} ({file_size} bytes)"
@@ -551,7 +553,7 @@ def process_zip_file(zip_file) -> List[Dict[str, Any]]:
             for rel_path, file_path in extracted_files:
                 try:
                     # Determine file type
-                    ext = os.path.splitext(rel_path)[1].lower()
+                    ext = Path(rel_path).suffix.lower()
                     file_type = None
                     if ext == ".pdf":
                         file_type = "pdf"
@@ -575,7 +577,7 @@ def process_zip_file(zip_file) -> List[Dict[str, Any]]:
                     # Open and process the file
                     with open(file_path, "rb") as f:
                         file_content = io.BytesIO(f.read())
-                        file_content.name = os.path.basename(file_path)
+                        file_content.name = Path(file_path).name
 
                         # Create a custom class to mimic a file upload object
                         class FileObj:
@@ -629,6 +631,7 @@ def process_zip_file(zip_file) -> List[Dict[str, Any]]:
         )
 
     return results
+
 
 def split_text_into_chunks(
     text: str, max_chunk_size: int = 4000, overlap: int = 200
@@ -726,7 +729,6 @@ def split_text_into_chunks(
 
 
 def detect_file_type(filename: str) -> str:
-
     """Guess a file type from its filename.
 
     Args:
