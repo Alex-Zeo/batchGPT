@@ -11,7 +11,6 @@ from repositories.batch_repository import BatchRepository
 from services import StorageService
 from services.observer import BatchStatusObserver
 
-
 class BatchJob:
     """Class representing a batch job with status and results"""
 

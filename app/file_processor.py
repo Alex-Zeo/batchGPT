@@ -6,7 +6,7 @@ import uuid
 import tempfile
 import zipfile
 from typing import Dict, Optional, Tuple, List, Any
-from .logger import logger, setup_logger as _setup_logger
+from logs.logger import logger, setup_logger as _setup_logger
 import concurrent.futures
 import mimetypes
 

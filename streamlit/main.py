@@ -30,7 +30,7 @@ from app.file_processor import (
 )
 from app.batch_manager import batch_manager
 from dotenv import load_dotenv
-from app.logger import logger, setup_logger
+from logs.logger import logger, setup_logger
 
 # Set up logging
 setup_logger()
