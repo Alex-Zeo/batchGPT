@@ -83,19 +83,19 @@ Using the Batch API can save you **50% on token costs** for non-time-sensitive t
    ```
 4. Run the application:
    ```bash
-   streamlit run streamlit/main.py
+   streamlit run interfaces/streamlit/main.py
    ```
 
 ## CLI Examples
 
-Run prompts from a local directory using `cli.py`:
+Run prompts from a local directory using `python -m interfaces.cli.main`:
 ```bash
-python cli.py prompts/ --model gpt-4 --budget 10 --glob "*.md"
+python -m interfaces.cli.main prompts/ --model gpt-4 --budget 10 --glob "*.md"
 ```
 
 Read prompts from S3 and hide their contents in logs:
 ```bash
-python cli.py s3://my-bucket/prompts.txt --redact
+python -m interfaces.cli.main s3://my-bucket/prompts.txt --redact
 ```
 
 ## Directory Structure
@@ -111,16 +111,16 @@ python cli.py s3://my-bucket/prompts.txt --redact
   - `prompt_store.py` - Prompt loading utilities
   - `postprocessor.py` - Combine chunked responses
   - `wowrunner.py` - High level batch runner
-- `streamlit/main.py` - Main Streamlit application
+- `interfaces/streamlit/main.py` - Main Streamlit application
 - `prompts/wow_r/` - Default prompts
 
 ## WowRunner
 
-Use `cli.py` or the `WowRunner` class to process PDFs with the prompts stored in
+Use `python -m interfaces.cli.main` or the `WowRunner` class to process PDFs with the prompts stored in
 `prompts/wow_r/wowsystem.md` and `prompts/wow_r/wowuser.md`.
 
 ```bash
-python cli.py myfile.pdf --model gpt-4o
+python -m interfaces.cli.main myfile.pdf --model gpt-4o
 ```
 
 The combined result for each PDF is printed to stdout.
@@ -140,7 +140,7 @@ MIT License
 A lightweight CLI is provided to process PDFs directly from the terminal.
 
 ```bash
-python cli.py path/to/file.pdf --model gpt-3.5-turbo --budget 5 --output results.jsonl
+python -m interfaces.cli.main path/to/file.pdf --model gpt-3.5-turbo --budget 5 --output results.jsonl
 ```
 
 The CLI loads the PDF, splits it into token sized chunks and streams each chunk

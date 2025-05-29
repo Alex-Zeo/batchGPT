@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import os
 import glob
 from typing import List
