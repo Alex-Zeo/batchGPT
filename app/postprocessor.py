@@ -1,6 +1,6 @@
 import json
-import os
 import re
+from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 from pydantic import BaseModel, ValidationError
 
@@ -13,14 +13,18 @@ class WowResponse(BaseModel):
 SCHEMA_JSON = WowResponse.schema_json(indent=2)
 
 
-def load_schema(path: Optional[str] = None) -> Dict[str, Any]:
+def load_schema(path: Optional[Path] = None) -> Dict[str, Any]:
     """Load JSON schema from `wowsystem.md` if available."""
     if path is None:
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "prompts", "wow_r", "wowsystem.md"
+        path = (
+            Path(__file__).resolve().parent.parent
+            / "prompts"
+            / "wow_r"
+            / "wowsystem.md"
         )
     try:
-        with open(path, "r") as f:
+        file_path = path.resolve()
+        with file_path.open("r") as f:
             content = f.read()
             match = re.search(r"```json\s*(\{.*?\})\s*```", content, re.S)
             if match:
@@ -41,6 +45,7 @@ def validate_openai_response(content: str) -> WowResponse:
         return WowResponse.parse_obj(data)
     except ValidationError as e:
         raise ValueError(f"Response does not match schema: {e}") from e
+
 
 def merge_chunks(responses: List[Dict[str, Any]]) -> str:
     """Combine responses from chunked completions into a single string."""
