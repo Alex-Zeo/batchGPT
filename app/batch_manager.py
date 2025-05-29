@@ -6,6 +6,7 @@ from datetime import datetime
 import glob
 from pathlib import Path
 from .logger import logger
+from logs.logger import logger
 
 
 class BatchJob:
