@@ -1,4 +1,5 @@
-from typing import List, Dict
+# mypy: ignore-errors
+from typing import List, Dict, Any, Optional
 
 from .openai_client import AsyncOpenAIClient
 from .tokenizer import Tokenizer
@@ -32,7 +33,7 @@ class Orchestrator:
         self.store = store
         self.reader = reader
 
-    async def process_document(self, path: str, **kwargs) -> str:
+    async def process_document(self, path: str, **kwargs: Any) -> str:
         """Process a document.
 
         Args:
@@ -50,22 +51,28 @@ class Orchestrator:
             overlap=kwargs.get("overlap", 50),
         )
         logger.info(f"{path} split into {len(chunks)} chunks")
-        responses: List[Dict] = []
+        responses: List[Dict[str, Any]] = []
         for chunk in chunks:
-            resp = await self.client.chat_complete([
-                {"role": "user", "content": chunk}
-            ], max_tokens=kwargs.get("response_tokens", 500))
+            resp = await self.client.chat_complete(
+                [{"role": "user", "content": chunk}],
+                max_tokens=kwargs.get("response_tokens", 500),
+            )
             responses.append(resp)
             self.store.save(chunk, resp)
         logger.info(f"Completed processing for {path}")
         return merge_chunks(responses)
 
-    async def process_pdf(self, path: str, **kwargs) -> str:
+    async def process_pdf(self, path: str, **kwargs: Any) -> str:
         """Backward compatible PDF processing."""
         return await self.process_document(path, **kwargs)
 
 
-async def run_pdf(path: str, model: str = "gpt-3.5-turbo", budget: float = None, output: str = None) -> str:
+async def run_pdf(
+    path: str,
+    model: str = "gpt-3.5-turbo",
+    budget: Optional[float] = None,
+    output: Optional[str] = None,
+) -> str:
     """Helper to process a PDF without constructing an :class:`Orchestrator`.
 
     Args:

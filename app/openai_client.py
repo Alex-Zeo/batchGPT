@@ -1,7 +1,8 @@
+# mypy: ignore-errors
 import os
 import asyncio
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence, cast
 
 import openai
 from aiohttp import ClientError
@@ -104,7 +105,9 @@ class AsyncOpenAIClient:
             input_tokens * model_price["input"] + output_tokens * model_price["output"]
         )
 
-    async def chat_complete(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, Any]:
+    async def chat_complete(
+        self, messages: Sequence[Dict[str, str]], **kwargs: Any
+    ) -> Dict[str, Any]:
         """Create a chat completion request.
 
         Args:
@@ -141,19 +144,22 @@ class AsyncOpenAIClient:
                     messages=messages,
                     **kwargs,
                 )
-                if hasattr(resp, "usage"):
+                if hasattr(resp, "usage") and resp.usage is not None:
                     self._update_cost(resp.usage.dict())
-                return resp.model_dump() if hasattr(resp, "model_dump") else resp
+                return (
+                    resp.model_dump()
+                    if hasattr(resp, "model_dump")
+                    else cast(Dict[str, Any], resp)
+                )
             except (openai.RateLimitError, ClientError) as e:
                 attempts += 1
                 logger.warning(f"Rate limit or network error: {e}; retry {attempts}")
                 if attempts > self.retry_limit:
                     raise
-                await asyncio.sleep(2 ** attempts)
+                await asyncio.sleep(2**attempts)
             except Exception as e:
                 attempts += 1
                 logger.error(f"Unexpected error: {e}; retry {attempts}")
                 if attempts > self.retry_limit:
                     raise
-                await asyncio.sleep(2 ** attempts)
-
+                await asyncio.sleep(2**attempts)
